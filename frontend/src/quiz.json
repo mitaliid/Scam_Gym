@@ -1,54 +1,45 @@
 {
-  "version": 1,
+  "version": 2,
+  "framing": "confidence",
   "questions": [
     {
       "id": "q1",
       "behavior": "urgency_resistance",
-      "prompt": "A caller says money is leaving your account right now and they can only stop it while you stay on the line. What do you do?",
+      "prompt": "If someone called right now saying money was leaving your account and they could only stop it while you stayed on the line, how sure are you that you'd refuse to be rushed?",
       "options": [
-        { "id": "a", "text": "Move fast and follow their instructions before the transfer clears.", "score": 0 },
-        { "id": "b", "text": "Stay on the call, but ask a lot of questions first.", "score": 50 },
-        { "id": "c", "text": "Slow down. A real bank can reverse a fraudulent transfer later — the deadline is the pressure.", "score": 100 }
+        { "id": "a", "text": "Not at all sure", "score": 0 },
+        { "id": "b", "text": "Somewhat sure", "score": 50 },
+        { "id": "c", "text": "Very sure", "score": 100 }
       ]
     },
     {
       "id": "q2",
       "behavior": "independent_verification",
-      "prompt": "You want to check the caller is really from your bank. What actually works?",
+      "prompt": "If a caller pressured you right now, how sure are you that you'd hang up and call your bank back on the number on your card?",
       "options": [
-        { "id": "a", "text": "Ask for their name, employee ID, and case number.", "score": 0 },
-        { "id": "b", "text": "Ask for a number to call them back on.", "score": 0 },
-        { "id": "c", "text": "Hang up and call the number printed on your own card.", "score": 100 }
+        { "id": "a", "text": "Not at all sure", "score": 0 },
+        { "id": "b", "text": "Somewhat sure", "score": 50 },
+        { "id": "c", "text": "Very sure", "score": 100 }
       ]
     },
     {
       "id": "q3",
       "behavior": "information_withholding",
-      "prompt": "The caller already knows your name and the last four digits of your account, and asks you to confirm them. Is that safe?",
+      "prompt": "How sure are you that you'd refuse to confirm even the last four digits of your account to someone who called you?",
       "options": [
-        { "id": "a", "text": "Yes — they already have it, so confirming gives nothing away.", "score": 0 },
-        { "id": "b", "text": "Probably fine for the last four digits, but nothing more.", "score": 50 },
-        { "id": "c", "text": "No. Confirming tells them the data is correct, and knowing it proves nothing about who they are.", "score": 100 }
+        { "id": "a", "text": "Not at all sure", "score": 0 },
+        { "id": "b", "text": "Somewhat sure", "score": 50 },
+        { "id": "c", "text": "Very sure", "score": 100 }
       ]
     },
     {
       "id": "q4",
       "behavior": "authority_deference",
-      "prompt": "The caller cites an internal case number and says their systems flagged your account automatically. How much should that reassure you?",
+      "prompt": "If a caller gave you a case number and said their systems had flagged your account, how sure are you that you'd still treat them as unverified?",
       "options": [
-        { "id": "a", "text": "A lot — that level of detail is hard to fake.", "score": 0 },
-        { "id": "b", "text": "Somewhat, but I would still be a little careful.", "score": 50 },
-        { "id": "c", "text": "Not at all. Case numbers are free to invent and cannot be checked from your side.", "score": 100 }
-      ]
-    },
-    {
-      "id": "q5",
-      "behavior": "independent_verification",
-      "prompt": "Your bank's real fraud team calls you. What will they never ask for?",
-      "options": [
-        { "id": "a", "text": "To confirm a recent transaction.", "score": 0 },
-        { "id": "b", "text": "To read back a code they just texted you, or to move money to a safe account.", "score": 100 },
-        { "id": "c", "text": "To call them back later.", "score": 0 }
+        { "id": "a", "text": "Not at all sure", "score": 0 },
+        { "id": "b", "text": "Somewhat sure", "score": 50 },
+        { "id": "c", "text": "Very sure", "score": 100 }
       ]
     }
   ]
