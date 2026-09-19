@@ -83,7 +83,11 @@ SYSTEM_PROMPT = (
 )
 
 
-def _build_user_prompt(transcript: dict[str, Any], rubric: dict[str, Any]) -> str:
+def _build_user_prompt(
+    transcript: dict[str, Any],
+    rubric: dict[str, Any],
+    knowledge: dict[str, int] | None = None,
+) -> str:
     behaviors_block = json.dumps(rubric["behaviors"], indent=2)
     rules_block = "\n".join(f"- {r}" for r in rubric["scoring_rules"])
     turns_block = "\n".join(
@@ -93,6 +97,14 @@ def _build_user_prompt(transcript: dict[str, Any], rubric: dict[str, Any]) -> st
     tactics = ", ".join(rubric["tactics"])
     verdicts = ", ".join(rubric["verdicts"])
     names = [b["name"] for b in rubric["behaviors"]]
+
+    confidence_block = (
+        "\n".join(
+            f"- {name}: user predicted they were {pct}% likely to do this"
+            for name, pct in (knowledge or {}).items()
+        )
+        or "(not available)"
+    )
 
     return f"""Score how the USER behaved during a simulated scam phone call.
 A fake bank fraud investigator pressured them. Judge only the user.
@@ -106,6 +118,9 @@ BEHAVIORS TO SCORE
 Scale: behavior_pct is 0-100. resisted = 100, partial = 50, complied = 0.
 ALLOWED tactic values: {tactics}
 ALLOWED verdict values: {verdicts}
+
+WHAT THE USER PREDICTED ABOUT THEMSELVES BEFORE THE CALL
+{confidence_block}
 
 TRANSCRIPT
 {turns_block}
@@ -127,7 +142,7 @@ maximum 4 entries. ts is the agent's timestamp for that tactic.
   "timeline": [
     {{ "ts": 18.6, "tactic": "urgency", "user_response": "asked what to do", "good": false }}
   ],
-  "summary_line": "One short blunt sentence naming what the user did wrong. Second person. No advice."
+    "summary_line": "Two short sentences. First: what the user predicted about themselves, using their own confidence level. Second: the single worst thing they actually did, with the timestamp as m:ss. Second person, past tense, no advice, no list. Example: 'You were very sure you would verify. At 1:14 you told him to go ahead.'"
 }}
 
 Every quote must be copied verbatim from a USER line above, with that line's
@@ -201,10 +216,14 @@ def _create(messages: list[dict[str, str]]):
     return _get_client().chat.completions.create(**kwargs)
 
 
-def _call_model(transcript: dict[str, Any], rubric: dict[str, Any]) -> dict[str, Any]:
+def _call_model(
+    transcript: dict[str, Any],
+    rubric: dict[str, Any],
+    knowledge: dict[str, int] | None = None,
+) -> dict[str, Any]:
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": _build_user_prompt(transcript, rubric)},
+        {"role": "user", "content": _build_user_prompt(transcript, rubric, knowledge)},
     ]
 
     last_error: Exception | None = None
@@ -247,7 +266,7 @@ def score_transcript(
 ) -> dict[str, Any]:
     rubric = load_rubric()
     knowledge = knowledge_by_behavior(quiz_answers)
-    model_output = _call_model(transcript, rubric)
+    model_output = _call_model(transcript, rubric, knowledge)
 
     by_name = {b.get("name"): b for b in model_output.get("behaviors", [])}
     allowed_verdicts = set(rubric["verdicts"])
@@ -297,9 +316,21 @@ def score_transcript(
             }
         )
 
+        # Gap size first. On a tie, prefer the behavior whose failure is most
+    # visceral in a demo, then the one with the most evidence behind it.
+    _tiebreak = {
+        "information_withholding": 3,
+        "independent_verification": 2,
+        "authority_deference": 1,
+        "urgency_resistance": 0,
+    }
     biggest_gap = max(
         behaviors,
-        key=lambda b: b["knowledge_pct"] - b["behavior_pct"],
+        key=lambda b: (
+            b["knowledge_pct"] - b["behavior_pct"],
+            _tiebreak.get(b["name"], 0),
+            len(b["evidence"]),
+        ),
     )["name"]
 
     return {

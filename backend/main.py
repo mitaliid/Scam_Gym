@@ -16,6 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 import db
+import scoring
 
 db.init_db()
 
@@ -227,8 +228,12 @@ def score_session(session_id: str) -> Score:
     if row["transcript"] is None:
         raise HTTPException(409, "no transcript on this session yet")
 
-    # CP3: score = scoring.run(row["transcript"], rubric)
-    score = stub_score(session_id)
+    try:
+        score = scoring.score_transcript(
+            session_id, row["transcript"], row["quiz"] or {}
+        )
+    except Exception as exc:
+        raise HTTPException(502, f"scoring failed: {exc}")
 
     db.save_score(session_id, score)
     return Score(**score)
