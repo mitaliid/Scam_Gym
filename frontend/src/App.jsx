@@ -11,6 +11,7 @@ export default function App() {
 }
 
 function Call() {
+  const DEBUG = false;
   const [stage, setStage] = useState('call');
   const backendSessionId = useRef(null);
   const sessionRequest = useRef(null);
@@ -113,8 +114,8 @@ function Call() {
   };
 
   const completeQuiz = async (answers) => {
-    const response = await fetch(`http://localhost:8000/session/${backendSessionId.current}/quiz`, {
-      method: 'POST',
+    const response = await fetch(`http://localhost:8000/session/${backendSessionId.current}`, {
+      method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ quiz: answers }),
     });
@@ -159,7 +160,7 @@ function Call() {
 
   return (
     <div style={{ padding: 24, fontFamily: 'system-ui', maxWidth: 800 }}>
-      <h2>CP1 spike</h2>
+      <h2>Incoming call</h2>
       <p>Status: <strong>{conversation.status}</strong></p>
       {sessionError && <p role="alert">{sessionError}</p>}
 
@@ -167,9 +168,11 @@ function Call() {
       <button onClick={start} disabled={!sessionReady} style={{ padding: 8, marginRight: 8 }}>Start call</button>
       <button onClick={() => conversation.endSession()} style={{ padding: 8 }}>End call</button>
 
-      <pre style={{ background: '#111', color: '#0f0', padding: 12, marginTop: 16, overflow: 'auto' }}>
-        {JSON.stringify(log, null, 2)}
-      </pre>
+      {DEBUG && (
+        <pre style={{ background: '#111', color: '#0f0', padding: 12, marginTop: 16, overflow: 'auto' }}>
+          {JSON.stringify(log, null, 2)}
+        </pre>
+      )}
     </div>
   );
 }
