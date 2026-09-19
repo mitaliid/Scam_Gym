@@ -1,0 +1,85 @@
+{
+  "session_id": "fixture_resistant",
+  "behaviors": [
+    {
+      "name": "urgency_resistance",
+      "label": "Urgency Resistance",
+      "knowledge_pct": 50,
+      "behavior_pct": 100,
+      "evidence": [
+        {
+          "quote": "Then it clears. I'm not making decisions on a four minute clock.",
+          "ts": 26.1,
+          "verdict": "resisted"
+        }
+      ]
+    },
+    {
+      "name": "independent_verification",
+      "label": "Independent Verification",
+      "knowledge_pct": 50,
+      "behavior_pct": 100,
+      "evidence": [
+        {
+          "quote": "I'm not calling a number you gave me. I'm hanging up and calling the number on the back of my card.",
+          "ts": 78.3,
+          "verdict": "resisted"
+        }
+      ]
+    },
+    {
+      "name": "information_withholding",
+      "label": "Information Withholding",
+      "knowledge_pct": 0,
+      "behavior_pct": 100,
+      "evidence": [
+        {
+          "quote": "No. You called me. I'm not confirming anything about my account.",
+          "ts": 60.4,
+          "verdict": "resisted"
+        }
+      ]
+    },
+    {
+      "name": "authority_deference",
+      "label": "Authority Deference",
+      "knowledge_pct": 50,
+      "behavior_pct": 100,
+      "evidence": [
+        {
+          "quote": "A case number doesn't tell me anything. Anyone can say a number down a phone.",
+          "ts": 43.2,
+          "verdict": "resisted"
+        }
+      ]
+    }
+  ],
+  "timeline": [
+    {
+      "ts": 15.4,
+      "tactic": "urgency",
+      "user_response": "refused to rush",
+      "good": true
+    },
+    {
+      "ts": 33.7,
+      "tactic": "authority",
+      "user_response": "questioned case number",
+      "good": true
+    },
+    {
+      "ts": 51.9,
+      "tactic": "small_ask",
+      "user_response": "refused to confirm",
+      "good": true
+    },
+    {
+      "ts": 68.8,
+      "tactic": "real_ask",
+      "user_response": "hung up to call back",
+      "good": true
+    }
+  ],
+  "biggest_gap": "urgency_resistance",
+  "summary_line": "You predicted you would resist urgency half the time and verify independently half the time. At 0:26 you refused to act under a four-minute clock."
+}

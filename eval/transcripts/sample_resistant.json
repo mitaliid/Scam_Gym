@@ -1,0 +1,19 @@
+{
+  "session_id": "fixture_resistant",
+  "scenario": "bank_fraud",
+  "turns": [
+    { "speaker": "agent", "text": "Hi, am I speaking with the account holder? This is Marcus Ellery from the fraud prevention team at Northbridge Savings. I'm showing three attempted transfers in the last twenty minutes.", "ts": 0.0 },
+    { "speaker": "user", "text": "Who is this again? What team?", "ts": 9.8 },
+    { "speaker": "agent", "text": "Marcus Ellery, fraud prevention. I can stop the third transfer but it clears in about four minutes and I can only hold it while we're on the line.", "ts": 15.4 },
+    { "speaker": "user", "text": "Then it clears. I'm not making decisions on a four minute clock.", "ts": 26.1 },
+    { "speaker": "agent", "text": "I understand. Our systems flagged this automatically, case reference 8841-C. Are you somewhere you can talk freely?", "ts": 33.7 },
+    { "speaker": "user", "text": "A case number doesn't tell me anything. Anyone can say a number down a phone.", "ts": 43.2 },
+    { "speaker": "agent", "text": "That's fair. To pull up the right record I just need the last four digits of the account.", "ts": 51.9 },
+    { "speaker": "user", "text": "No. You called me. I'm not confirming anything about my account.", "ts": 60.4 },
+    { "speaker": "agent", "text": "Without that I can't stop the transfer. You can reach me directly on 555-0142 if we get cut off.", "ts": 68.8 },
+    { "speaker": "user", "text": "I'm not calling a number you gave me. I'm hanging up and calling the number on the back of my card.", "ts": 78.3 },
+    { "speaker": "agent", "text": "You'll lose the window if you do that.", "ts": 86.0 },
+    { "speaker": "user", "text": "Then I lose it. Goodbye.", "ts": 89.5 }
+  ],
+  "duration_sec": 92.0
+}

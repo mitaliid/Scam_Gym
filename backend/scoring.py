@@ -316,7 +316,7 @@ def score_transcript(
             }
         )
 
-        # Gap size first. On a tie, prefer the behavior whose failure is most
+    # Gap size first. On a tie, prefer the behavior whose failure is most
     # visceral in a demo, then the one with the most evidence behind it.
     _tiebreak = {
         "information_withholding": 3,
@@ -324,14 +324,23 @@ def score_transcript(
         "authority_deference": 1,
         "urgency_resistance": 0,
     }
-    biggest_gap = max(
-        behaviors,
-        key=lambda b: (
-            b["knowledge_pct"] - b["behavior_pct"],
-            _tiebreak.get(b["name"], 0),
-            len(b["evidence"]),
-        ),
-    )["name"]
+    _gaps = [
+        b for b in behaviors if b["knowledge_pct"] - b["behavior_pct"] > 0
+    ]
+    if _gaps:
+        biggest_gap = max(
+            _gaps,
+            key=lambda b: (
+                b["knowledge_pct"] - b["behavior_pct"],
+                _tiebreak.get(b["name"], 0),
+                len(b["evidence"]),
+            ),
+        )["name"]
+    else:
+        # No behavior where they underperformed their own prediction.
+        # Fall back to the weakest behavior outright, so round two still
+        # has something to target.
+        biggest_gap = min(behaviors, key=lambda b: b["behavior_pct"])["name"]
 
     return {
         "session_id": session_id,
