@@ -1,5 +1,6 @@
 import { ConversationProvider, useConversation } from '@elevenlabs/react';
 import { useRef, useState } from 'react';
+import Quiz from './Quiz';
 
 export default function App() {
   return (
@@ -10,6 +11,8 @@ export default function App() {
 }
 
 function Call() {
+  const [stage, setStage] = useState('quiz');
+  const backendSessionId = useRef(null);
   const [log, setLog] = useState([]);
   const [name, setName] = useState('Jordan Reyes');
   const session = useRef(null);
@@ -28,8 +31,8 @@ function Call() {
       setLog([...turns]);
     },
     onError: (e) => console.error('EL error:', e),
-    onConnect: ({ conversationId }) => {
-      session.current = { id: conversationId, startedAt: performance.now(), turns: [] };
+    onConnect: () => {
+      session.current = { id: backendSessionId.current, startedAt: performance.now(), turns: [] };
       console.log('connected');
     },
     onDisconnect: async () => {
@@ -46,9 +49,9 @@ function Call() {
       setLog(transcript);
       try {
         const response = await fetch('http://localhost:8000/transcript', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ session_id: id, transcript }),
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(transcript),
         });
         if (!response.ok) throw new Error(`Transcript POST failed: ${response.status}`);
       } catch (e) {
@@ -56,6 +59,21 @@ function Call() {
       }
     },
   });
+
+  const completeQuiz = async (answers) => {
+    const response = await fetch('http://localhost:8000/session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ quiz: answers }),
+    });
+    if (!response.ok) throw new Error(`Session POST failed: ${response.status}`);
+    const { session_id } = await response.json();
+    if (typeof session_id !== 'string' || !session_id.trim()) {
+      throw new Error('Session response is missing a session_id');
+    }
+    backendSessionId.current = session_id;
+    setStage('call');
+  };
 
   const start = async () => {
     setLog([]);
@@ -72,6 +90,8 @@ function Call() {
       console.error('start failed:', e);
     }
   };
+
+  if (stage === 'quiz') return <Quiz onComplete={completeQuiz} />;
 
   return (
     <div style={{ padding: 24, fontFamily: 'system-ui', maxWidth: 800 }}>
