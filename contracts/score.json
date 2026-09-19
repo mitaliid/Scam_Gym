@@ -1,0 +1,19 @@
+{
+  "session_id": "abc123",
+  "behaviors": [
+    {
+      "name": "independent_verification",
+      "label": "Independent Verification",
+      "knowledge_pct": 90,
+      "behavior_pct": 30,
+      "evidence": [
+        {"quote": "Sure, it's 4417.", "ts": 108.0, "verdict": "complied"}
+      ]
+    }
+  ],
+  "timeline": [
+    {"ts": 42.0, "tactic": "urgency", "user_response": "kept talking", "good": false}
+  ],
+  "biggest_gap": "independent_verification",
+  "summary_line": "You said you'd verify. You didn't."
+}
