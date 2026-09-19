@@ -46,9 +46,9 @@ function Call() {
       setLog(transcript);
       try {
         const response = await fetch('http://localhost:8000/transcript', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(transcript),
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: id, transcript }),
         });
         if (!response.ok) throw new Error(`Transcript POST failed: ${response.status}`);
       } catch (e) {
