@@ -23,15 +23,16 @@ export default function Quiz({ onComplete }) {
     try {
       await onComplete(nextAnswers);
     } catch (e) {
-      console.error('session creation failed:', e);
-      setError('Could not start your session. Select an option to try again.');
+      console.error('quiz submission failed:', e);
+      setError('Could not save your answers. Select an option to try again.');
       setSubmitting(false);
     }
   };
 
   return (
     <div style={{ padding: 24, fontFamily: 'system-ui', maxWidth: 800 }}>
-      <h2>Quiz</h2>
+      <h2>What would you do?</h2>
+      <p>Your call is scored. Before we show you — five quick questions, 30 seconds.</p>
       <p>{index + 1} of {QUESTIONS.length}</p>
       <h3>{question.prompt}</h3>
       {question.options.map((option) => (
@@ -40,7 +41,7 @@ export default function Quiz({ onComplete }) {
           {option.text}
         </button>
       ))}
-      {submitting && <p role="status">Starting your session…</p>}
+      {submitting && <p role="status">Saving your answers…</p>}
       {error && <p role="alert">{error}</p>}
     </div>
   );
