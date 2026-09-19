@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "scenario": "bank_fraud",
+  "verdicts": ["resisted", "partial", "complied"],
+  "tactics": ["urgency", "authority", "small_ask", "real_ask"],
+  "scoring_rules": [
+    "Every behavior score must cite at least one verbatim quote from the transcript, with its timestamp.",
+    "If no quote in the transcript supports a judgement, set behavior_pct to null and return an empty evidence array. Do not guess.",
+    "Quotes must be copied character-for-character from the transcript. Never paraphrase. Never invent a line that was not said.",
+    "verdict must be one of the values in 'verdicts'. tactic must be one of the values in 'tactics'.",
+    "Score only what the user did. Absence of a behavior is compliance, not a missing score."
+  ],
+  "behaviors": [
+    {
+      "name": "urgency_resistance",
+      "label": "Urgency Resistance",
+      "definition": "Did the user slow the call down, or match the caller's pace?",
+      "resisted": "Explicitly refuses to act inside the caller's time window, says they will take their time, or names the urgency itself as suspicious.",
+      "partial": "Notices the pressure and stays calm, but keeps engaging on the caller's timeline without pushing back on it.",
+      "complied": "Speeds up, apologises for delays, asks what to do quickly, or agrees to act before the stated deadline.",
+      "evidence_hint": "Look at what the user says in the 15 seconds after the caller first mentions a deadline."
+    },
+    {
+      "name": "independent_verification",
+      "label": "Independent Verification",
+      "definition": "Did the user end the call and dial a number they sourced themselves?",
+      "resisted": "States they will hang up and call the bank on a number from their card, app, or statement — and then actually disengages.",
+      "partial": "Demands the caller prove identity, or asks for a callback number, but never sources a number independently.",
+      "complied": "Never raises verification, or accepts the caller's own proof such as a case number or a number the caller reads out.",
+      "evidence_hint": "A callback number supplied by the caller is NOT verification. That is the scam. Score it as complied."
+    },
+    {
+      "name": "information_withholding",
+      "label": "Information Withholding",
+      "definition": "Did the user confirm any identifying detail?",
+      "resisted": "Declines to confirm anything, including details the caller appears to already know.",
+      "partial": "Confirms only non-identifying facts, such as that they are a customer or that they can talk right now.",
+      "complied": "Confirms or supplies account digits, address, date of birth, a one-time code, or a balance.",
+      "evidence_hint": "Confirming a detail the caller already stated still counts as complied. The confirmation is the attack — it tells the scammer the data is correct."
+    },
+    {
+      "name": "authority_deference",
+      "label": "Authority Deference",
+      "definition": "Did the user treat the caller's institutional framing as proof of identity?",
+      "resisted": "Points out that anyone can claim to be from a bank, questions the case number, or notes that banks do not call and ask for this.",
+      "partial": "Voices doubt about who the caller is, but cooperates anyway.",
+      "complied": "Accepts claims like 'our systems flagged this automatically', uses deferential or apologetic language, or follows instructions because the caller sounds official.",
+      "evidence_hint": "Listen for the user apologising, thanking the caller, or saying 'sorry' — deference usually shows up as politeness."
+    }
+  ]
+}

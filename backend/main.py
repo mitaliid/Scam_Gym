@@ -162,8 +162,8 @@ def stub_score(session_id: str) -> dict[str, Any]:
                 ],
             },
             {
-                "name": "disengagement",
-                "label": "Disengagement",
+                "name": "authority_deference",
+                "label": "Authority Deference",
                 "knowledge_pct": 85,
                 "behavior_pct": 10,
                 "evidence": [
