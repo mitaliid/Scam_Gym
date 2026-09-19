@@ -83,3 +83,12 @@ def get_session(session_id: str) -> dict[str, Any] | None:
         "transcript": _load(row["transcript_json"]),
         "score": _load(row["score_json"]),
     }
+
+def save_quiz(session_id: str, quiz: dict[str, Any]) -> bool:
+    """Attach quiz answers to an existing session. False if no such session."""
+    with _conn() as conn:
+        cur = conn.execute(
+            "UPDATE sessions SET quiz_json = ? WHERE id = ?",
+            (json.dumps(quiz), session_id),
+        )
+        return cur.rowcount > 0

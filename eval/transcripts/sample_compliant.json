@@ -1,0 +1,19 @@
+{
+  "session_id": "fixture_compliant",
+  "scenario": "bank_fraud",
+  "turns": [
+    { "speaker": "agent", "text": "Hi, am I speaking with the account holder? This is Marcus Ellery from the fraud prevention team at Northbridge Savings. I'm showing three attempted transfers in the last twenty minutes.", "ts": 0.0 },
+    { "speaker": "user", "text": "Oh god, seriously? I haven't made any transfers.", "ts": 11.2 },
+    { "speaker": "agent", "text": "That's what the flag suggests. I can stop the third one, but it clears in about four minutes and I can only hold it while we're on the line.", "ts": 18.6 },
+    { "speaker": "user", "text": "Okay, okay. What do I need to do?", "ts": 27.9 },
+    { "speaker": "agent", "text": "Our systems flagged this automatically, case reference 8841-C. First, are you somewhere you can talk freely?", "ts": 34.1 },
+    { "speaker": "user", "text": "Yeah, I'm at home. Sorry, this is just a lot.", "ts": 41.5 },
+    { "speaker": "agent", "text": "Completely understandable. To pull up the right record I need the last four digits of the account.", "ts": 47.8 },
+    { "speaker": "user", "text": "Sure, it's 4417.", "ts": 56.3 },
+    { "speaker": "agent", "text": "Thank you. The safest step now is moving the balance to a protected holding account while we investigate. I'll read out the details.", "ts": 63.0 },
+    { "speaker": "user", "text": "Should I not call the bank first or something?", "ts": 74.6 },
+    { "speaker": "agent", "text": "You're welcome to, though the transfer would clear before you got through. You can reach me directly on 555-0142 if we get cut off.", "ts": 80.2 },
+    { "speaker": "user", "text": "No, okay, let's just do it now. Go ahead.", "ts": 91.4 }
+  ],
+  "duration_sec": 98.0
+}

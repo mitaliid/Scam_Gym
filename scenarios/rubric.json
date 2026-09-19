@@ -5,7 +5,7 @@
   "tactics": ["urgency", "authority", "small_ask", "real_ask"],
   "scoring_rules": [
     "Every behavior score must cite at least one verbatim quote from the transcript, with its timestamp.",
-    "If no quote in the transcript supports a judgement, set behavior_pct to null and return an empty evidence array. Do not guess.",
+    "If no quote in the transcript supports a judgement, set behavior_pct to 0 and return an empty evidence array. Do not invent a quote to justify a higher score.",
     "Quotes must be copied character-for-character from the transcript. Never paraphrase. Never invent a line that was not said.",
     "verdict must be one of the values in 'verdicts'. tactic must be one of the values in 'tactics'.",
     "Score only what the user did. Absence of a behavior is compliance, not a missing score."

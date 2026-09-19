@@ -187,11 +187,26 @@ def health() -> dict[str, bool]:
     return {"ok": True}
 
 
+class QuizPatch(BaseModel):
+    quiz: dict[str, Any]
+
+
 @app.post("/session", response_model=CreateSessionResponse)
-def create_session(body: CreateSessionRequest) -> CreateSessionResponse:
+def create_session(
+    body: CreateSessionRequest | None = None,
+) -> CreateSessionResponse:
+    """Quiz is optional here — answers arrive after the call, via PATCH."""
     session_id = uuid.uuid4().hex[:12]
-    db.create_session(session_id, body.quiz)
+    db.create_session(session_id, body.quiz if body else {})
     return CreateSessionResponse(session_id=session_id)
+
+
+@app.patch("/session/{session_id}")
+def patch_session(session_id: str, body: QuizPatch) -> dict[str, bool]:
+    """Attach the post-call confidence answers."""
+    if not db.save_quiz(session_id, body.quiz):
+        raise HTTPException(404, f"no session with id {session_id!r}")
+    return {"ok": True}
 
 
 @app.post("/transcript", response_model=TranscriptResponse)
