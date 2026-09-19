@@ -1,0 +1,85 @@
+{
+  "session_id": "b471494bd4eb",
+  "behaviors": [
+    {
+      "name": "urgency_resistance",
+      "label": "Urgency Resistance",
+      "knowledge_pct": 100,
+      "behavior_pct": 0,
+      "evidence": [
+        {
+          "quote": "Okay, okay. What do I need to do?",
+          "ts": 27.9,
+          "verdict": "complied"
+        }
+      ]
+    },
+    {
+      "name": "independent_verification",
+      "label": "Independent Verification",
+      "knowledge_pct": 100,
+      "behavior_pct": 0,
+      "evidence": [
+        {
+          "quote": "Should I not call the bank first or something?",
+          "ts": 74.6,
+          "verdict": "complied"
+        }
+      ]
+    },
+    {
+      "name": "information_withholding",
+      "label": "Information Withholding",
+      "knowledge_pct": 100,
+      "behavior_pct": 0,
+      "evidence": [
+        {
+          "quote": "Sure, it's 4417.",
+          "ts": 56.3,
+          "verdict": "complied"
+        }
+      ]
+    },
+    {
+      "name": "authority_deference",
+      "label": "Authority Deference",
+      "knowledge_pct": 100,
+      "behavior_pct": 0,
+      "evidence": [
+        {
+          "quote": "Yeah, I'm at home. Sorry, this is just a lot.",
+          "ts": 41.5,
+          "verdict": "complied"
+        }
+      ]
+    }
+  ],
+  "timeline": [
+    {
+      "ts": 18.6,
+      "tactic": "urgency",
+      "user_response": "asked what to do",
+      "good": false
+    },
+    {
+      "ts": 47.8,
+      "tactic": "authority",
+      "user_response": "gave account digits",
+      "good": false
+    },
+    {
+      "ts": 74.6,
+      "tactic": "urgency",
+      "user_response": "asked about calling bank",
+      "good": false
+    },
+    {
+      "ts": 80.2,
+      "tactic": "authority",
+      "user_response": "accepted callback number",
+      "good": false
+    }
+  ],
+  "biggest_gap": "information_withholding",
+  "summary_line": "You were very sure you would resist urgency, verify independently, withhold information, and question authority. At 0:56 you supplied the last four digits of your account."
+}
