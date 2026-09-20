@@ -1,14 +1,24 @@
 {
   "version": 1,
   "scenario": "bank_fraud",
-  "verdicts": ["resisted", "partial", "complied"],
-  "tactics": ["urgency", "authority", "small_ask", "real_ask"],
+  "verdicts": [
+    "resisted",
+    "partial",
+    "complied"
+  ],
+  "tactics": [
+    "urgency",
+    "authority",
+    "small_ask",
+    "real_ask"
+  ],
   "scoring_rules": [
     "Every behavior score must cite at least one verbatim quote from the transcript, with its timestamp.",
     "If no quote in the transcript supports a judgement, set behavior_pct to 0 and return an empty evidence array. Do not invent a quote to justify a higher score.",
     "Quotes must be copied character-for-character from the transcript. Never paraphrase. Never invent a line that was not said.",
     "verdict must be one of the values in 'verdicts'. tactic must be one of the values in 'tactics'.",
-    "Score only what the user did. Absence of a behavior is compliance, not a missing score.",     "Do not cite the same quote for more than one behavior. Each behavior must be grounded in a different moment in the transcript.",
+    "Score only what the user did. Absence of a behavior is compliance, not a missing score.",
+    "Do not cite the same quote for more than one behavior. Each behavior must be grounded in a different moment in the transcript.",
     "If the user challenged, questioned, or pushed back at any point, cite that moment as evidence even when they later gave in. Partial resistance followed by compliance is verdict 'partial', not 'complied'."
   ],
   "behaviors": [
@@ -25,8 +35,8 @@
       "name": "independent_verification",
       "label": "Independent Verification",
       "definition": "Did the user end the call and dial a number they sourced themselves?",
-      "resisted": "States they will hang up and call the bank on a number from their card, app, or statement — and then actually disengages.",
-      "partial": "Demands the caller prove identity, or asks for a callback number, but never sources a number independently.",
+      "resisted": "States they will hang up and call the bank on a number from their card, app, or statement \u2014 and then actually disengages.",
+      "partial": "Raises verification in any form and does not follow through. This includes asking whether they should call the bank, saying they would rather hang up and call back, demanding proof of identity, or asking for a callback number, and then continuing the call anyway.",
       "complied": "Never raises verification, or accepts the caller's own proof such as a case number or a number the caller reads out.",
       "evidence_hint": "A callback number supplied by the caller is NOT verification. That is the scam. Score it as complied."
     },
@@ -37,16 +47,16 @@
       "resisted": "Declines to confirm anything, including details the caller appears to already know.",
       "partial": "Confirms only non-identifying facts, such as that they are a customer or that they can talk right now.",
       "complied": "Confirms or supplies account digits, address, date of birth, a one-time code, or a balance.",
-      "evidence_hint": "Confirming a detail the caller already stated still counts as complied. The confirmation is the attack — it tells the scammer the data is correct."
+      "evidence_hint": "Confirming a detail the caller already stated still counts as complied. The confirmation is the attack \u2014 it tells the scammer the data is correct."
     },
     {
       "name": "authority_deference",
       "label": "Authority Deference",
       "definition": "Did the user treat the caller's institutional framing as proof of identity?",
       "resisted": "Points out that anyone can claim to be from a bank, questions the case number, or notes that banks do not call and ask for this.",
-      "partial": "Voices doubt about who the caller is, but cooperates anyway.",
+      "partial": "Questions, challenges, or expresses doubt about the caller's identity, authority, case number, or institutional claims at any point, but continues to cooperate afterwards.",
       "complied": "Accepts claims like 'our systems flagged this automatically', uses deferential or apologetic language, or follows instructions because the caller sounds official.",
-      "evidence_hint": "Listen for the user apologising, thanking the caller, or saying 'sorry' — deference usually shows up as politeness."
+      "evidence_hint": "Listen for the user apologising, thanking the caller, or saying 'sorry' \u2014 deference usually shows up as politeness."
     }
   ]
 }
