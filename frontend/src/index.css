@@ -123,3 +123,117 @@ nav {
   padding-left: 40px !important;
   padding-right: 40px !important;
 }
+
+/* Editorial light views. The phone screen keeps its existing styles. */
+:root {
+  --text: #22201B;
+  --text-h: #22201B;
+  --bg: #FBF8F1;
+  --border: #E3DCCD;
+}
+.editorial { font-size: 15px; line-height: 1.65 !important; }
+.editorial .editorial-page {
+  max-width: 1040px !important;
+  width: 100% !important;
+  margin-inline: auto;
+  padding: 56px 40px !important;
+  box-sizing: border-box;
+  line-height: 1.65 !important;
+}
+.editorial :is(h1,h2,h3,h4):not(.phone-dark *) {
+  font-family: 'Fraunces', serif;
+  font-weight: 400 !important;
+  letter-spacing: -0.015em !important;
+  line-height: 1.08 !important;
+}
+.editorial :is(h1,h2):not(.section-label):not(.phone-dark *) {
+  font-size: clamp(36px, 5vw, 64px) !important;
+}
+.editorial p:not(.phone-dark *) { max-width: 48ch !important; line-height: 1.65; }
+.editorial section:not(.phone-dark *) {
+  padding-block: 56px !important;
+  border-color: #E3DCCD;
+}
+.editorial .section-label:not(.phone-dark *) {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 11px !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.16em !important;
+  text-transform: uppercase;
+  color: #A8451F !important;
+  line-height: 1.65 !important;
+}
+.editorial button:not([aria-label^="Edit "]):not(.phone-dark *) {
+  font-family: Inter, sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 400;
+  letter-spacing: 0.1em !important;
+  text-transform: uppercase;
+  padding-block: 14px !important;
+  border-radius: 0;
+  box-shadow: none;
+  background: #22201B !important;
+  color: #FBF8F1 !important;
+}
+.editorial nav a { font-family: Inter, sans-serif !important; }
+.editorial button.wordmark {
+  font-family: Fraunces, serif !important;
+  font-size: 20px !important;
+  font-weight: 400;
+  font-style: italic;
+  letter-spacing: -0.015em !important;
+  text-transform: none;
+  background: transparent !important;
+  color: #22201B !important;
+  padding: 0 !important;
+}
+.editorial :is(input,select,textarea):not(.phone-dark *) {
+  font-family: Inter, sans-serif !important;
+  font-size: 15px !important;
+  font-weight: 400;
+  letter-spacing: normal;
+  line-height: 1.65;
+  padding: 14px !important;
+  background: transparent !important;
+  border: 1px solid #E3DCCD !important;
+  border-radius: 0;
+  box-shadow: none;
+}
+.editorial :is(input[type="number"],input[inputmode="numeric"],input[maxlength="4"]) {
+  font-family: 'JetBrains Mono', monospace !important;
+}
+.editorial label:not(.phone-dark *), .editorial label > span:not(.phone-dark *) {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: #7A746A;
+}
+.editorial .landing-hero { font-size: clamp(44px, 6.5vw, 76px) !important; }
+.editorial .landing-stats {
+  gap: 32px !important;
+  border-top: 0 !important;
+  border-bottom: 1px solid #E3DCCD;
+}
+.editorial .landing-stats > div { border: 0 !important; padding: 0 !important; }
+.editorial .landing-stats > div > p:last-child { font-family: Inter, sans-serif; font-size: 15px !important; }
+.editorial .landing-stats > div:last-child > p:first-child { color: #A8451F; }
+.editorial .about-section { display: grid; grid-template-columns: minmax(120px, 1fr) minmax(0, 3fr); gap: 40px; }
+.editorial .member-row { border: 0 !important; border-top: 1px solid #E3DCCD !important; padding: 56px 0 !important; margin-bottom: 0 !important; }
+.editorial .member-row > h2 { font-size: 26px !important; }
+.editorial .member-score { text-align: right; order: 3; }
+.editorial .member-score > p:last-child { font-size: 44px !important; line-height: 1.08; }
+.editorial .quiz-question { font-size: 30px !important; text-align: center; }
+.editorial button.quiz-option { background: transparent !important; color: #22201B !important; border: 1px solid #E3DCCD !important; }
+.editorial button.quiz-option:hover:not(:disabled), .editorial button.quiz-option:focus-visible { background: #22201B !important; color: #FBF8F1 !important; }
+.editorial button.quiz-option:hover:not(:disabled) span, .editorial button.quiz-option:focus-visible span { color: inherit !important; }
+.editorial .pre-call { min-height: 100svh; }
+@media (max-width: 600px) {
+  .editorial .about-section { grid-template-columns: 1fr; gap: 24px; }
+}
+
+.editorial .editorial-page h1.landing-hero { font-size: clamp(44px, 6.5vw, 76px) !important; }
+.editorial .editorial-page .member-row > h2 { font-size: 26px !important; }
+.editorial .phone-dark { font-size: 16px; }
+.editorial .phone-dark h2 { font-family: Inter, sans-serif; }
+.editorial .editorial-page .landing-stats { gap: 32px !important; }

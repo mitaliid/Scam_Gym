@@ -1,12 +1,12 @@
 const mono = '"JetBrains Mono", monospace';
 const colors = {
-  background: '#FAFAF8', text: '#1A1A1A', muted: '#6B6B6B',
-  border: '#E0E0DD', red: '#C0392B', cyan: '#1F6F5C', track: '#EDEDEA',
+  background: '#FBF8F1', text: '#22201B', muted: '#7A746A',
+  border: '#E3DCCD', red: '#A8451F', cyan: '#2F6B4F', track: '#EDEDEA',
 };
 const sectionStyle = { borderTop: `1px solid ${colors.border}`, padding: '24px 0' };
 const labelStyle = {
   fontFamily: mono, fontSize: 13, fontWeight: 400, letterSpacing: '0.16em',
-  lineHeight: 1.6, color: colors.muted, margin: '0 0 24px',
+  lineHeight: 1.65, color: colors.red, margin: '0 0 24px',
 };
 
 function timestamp(seconds) {
@@ -20,22 +20,22 @@ export default function Debrief({ score, onTrainGap, round = 1, comparison, trai
   const allComplied = score.behaviors.length > 0 && score.behaviors.every((behavior) => behavior.behavior_pct === 0);
 
   return (
-    <main style={{
+    <main className="editorial-page" style={{
       background: colors.background, color: colors.text, minHeight: '100svh',
       padding: '24px 40px', boxSizing: 'border-box',
-      fontFamily: 'Inter, sans-serif', textAlign: 'left', lineHeight: 1.6,
+      fontFamily: 'Inter, sans-serif', textAlign: 'left', lineHeight: 1.65,
     }}>
-      <div style={{ maxWidth: 960, margin: '0 auto' }}>
+      <div style={{ maxWidth: 1040, margin: '0 auto' }}>
         {round === 2 && comparison && <section style={{ border: `1px solid ${colors.border}`, padding: 16, marginBottom: 24 }}>
-          <h2 style={labelStyle}>TARGETED BEHAVIOR · ROUND COMPARISON</h2>
-          <h3 style={{ fontSize: 20, fontWeight: 600, margin: '0 0 16px' }}>{comparison.label}</h3>
+          <h2 className="section-label" style={labelStyle}>TARGETED BEHAVIOR · ROUND COMPARISON</h2>
+          <h3 style={{ fontSize: 20, fontWeight: 400, margin: '0 0 16px' }}>{comparison.label}</h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8 }}>
             {[
               { label: 'ROUND 1', value: `${comparison.round1}%`, color: colors.text },
               { label: 'DELTA', value: `${delta > 0 ? '+' : ''}${delta} pp`, color: delta > 0 ? colors.cyan : delta < 0 ? colors.red : colors.muted },
               { label: 'ROUND 2', value: `${comparison.round2}%`, color: colors.text },
             ].map((item) => <div key={item.label}>
-              <p style={{ ...labelStyle, marginBottom: 8 }}>{item.label}</p>
+              <p className="section-label" style={{ ...labelStyle, marginBottom: 8 }}>{item.label}</p>
               <p style={{ margin: 0, fontFamily: mono, fontSize: 'clamp(18px, 4vw, 32px)', color: item.color }}>{item.value}</p>
             </div>)}
           </div>
@@ -48,22 +48,22 @@ export default function Debrief({ score, onTrainGap, round = 1, comparison, trai
         </header>
 
         <section style={sectionStyle}>
-          <h2 style={labelStyle}>YOUR RESULT</h2>
-          {!allComplied && (gutAnswer === 'a' || gutAnswer === 'b') && <p style={{ fontSize: 16, color: colors.muted, margin: '0 0 16px' }}>
+          <h2 className="section-label" style={labelStyle}>YOUR RESULT</h2>
+          {!allComplied && (gutAnswer === 'a' || gutAnswer === 'b') && <p style={{ fontSize: 15, color: colors.muted, margin: '0 0 16px' }}>
             {gutAnswer === 'a' ? 'You said that call seemed real.' : "You weren't sure whether that call was real."}
           </p>}
           <h1 style={{
-            fontSize: 44, lineHeight: 1.1, fontWeight: 600, letterSpacing: '-0.02em',
+            fontSize: 44, lineHeight: 1.1, fontWeight: 400, letterSpacing: '-0.02em',
             color: colors.text, margin: '0 0 24px',
           }}>{allComplied ? "You complied with every tactic. That's the most common outcome — and exactly why this exists." : score.summary_line}</h1>
-          {!allComplied && gap && <p style={{ margin: 0, fontSize: 16, color: colors.muted }}>
+          {!allComplied && gap && <p style={{ margin: 0, fontSize: 15, color: colors.muted }}>
             You were <span style={{ fontFamily: mono, color: colors.text }}>{gap.knowledge_pct}%</span> sure.
             {' '}Under pressure you did <span style={{ fontFamily: mono, color: colors.text }}>{gap.behavior_pct}%</span>.
           </p>}
         </section>
 
         {score.behaviors.length > 0 && <section style={sectionStyle}>
-          <h2 style={labelStyle}>WHERE THE GAP IS</h2>
+          <h2 className="section-label" style={labelStyle}>WHERE THE GAP IS</h2>
           <div style={{ display: 'grid', gap: 16 }}>
             {score.behaviors.map((behavior) => {
               const critical = behavior.name === score.biggest_gap;
@@ -72,11 +72,11 @@ export default function Debrief({ score, onTrainGap, round = 1, comparison, trai
               return (
                 <article key={behavior.name} style={{
                   border: `1px solid ${critical ? colors.red : colors.border}`, padding: 16,
-                  background: critical ? '#FDF2F0' : colors.background,
+                  background: critical ? '#FDF0EA' : colors.background,
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
-                    <h3 style={{ fontSize: 20, fontWeight: 600, margin: 0 }}>{behavior.label}</h3>
-                    {critical && <span style={{ ...labelStyle, color: colors.red, margin: 0 }}>CRITICAL GAP</span>}
+                    <h3 style={{ fontSize: 20, fontWeight: 400, margin: 0 }}>{behavior.label}</h3>
+                    {critical && <span className="section-label" style={{ ...labelStyle, color: colors.red, margin: 0 }}>CRITICAL GAP</span>}
                   </div>
                   <div style={{ display: 'grid', gap: 8 }}>
                     {[
@@ -89,7 +89,7 @@ export default function Debrief({ score, onTrainGap, round = 1, comparison, trai
                           style={{ height: 28, background: colors.track }}>
                           <div style={{ width: `${bar.value}%`, height: '100%', background: bar.color }} />
                         </div>
-                        <span style={{ fontFamily: mono, fontSize: 16, textAlign: 'right', color: bar.color }}>{bar.value}%</span>
+                        <span style={{ fontFamily: mono, fontSize: 15, textAlign: 'right', color: bar.color }}>{bar.value}%</span>
                       </div>
                     ))}
                   </div>
@@ -108,7 +108,7 @@ export default function Debrief({ score, onTrainGap, round = 1, comparison, trai
         </section>}
 
         {score.timeline.length > 0 && <section style={sectionStyle}>
-          <h2 style={labelStyle}>WHAT HAPPENED</h2>
+          <h2 className="section-label" style={labelStyle}>WHAT HAPPENED</h2>
           <ol style={{ listStyle: 'none', padding: 0, margin: 0 }}>
             {score.timeline.map((item, index) => (
               <li key={index} style={{ display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', gap: '8px 16px', padding: '16px 0', borderBottom: `1px solid ${colors.border}`, fontSize: 14 }}>
