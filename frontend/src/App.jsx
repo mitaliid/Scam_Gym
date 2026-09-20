@@ -1,6 +1,7 @@
 import { ConversationProvider, useConversation } from '@elevenlabs/react';
 import { useEffect, useRef, useState } from 'react';
 import Quiz from './Quiz';
+import Debrief from './Debrief';
 
 export default function App() {
   return (
@@ -150,13 +151,7 @@ function Call() {
     </div>
   );
 
-  if (stage === 'debrief') return (
-    <div style={{ padding: 24, fontFamily: 'system-ui', maxWidth: 800 }}>
-      <pre style={{ background: '#111', color: '#0f0', padding: 12, overflow: 'auto' }}>
-        {JSON.stringify(score, null, 2)}
-      </pre>
-    </div>
-  );
+  if (stage === 'debrief') return <Debrief score={score} />;
 
   return (
     <div style={{ padding: 24, fontFamily: 'system-ui', maxWidth: 800 }}>
