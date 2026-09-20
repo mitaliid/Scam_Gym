@@ -378,10 +378,10 @@ function PhoneCallScreen({ round, name, setName, lastFour, setLastFour, bankName
           </div>
           <button type="button" onClick={() => setReady(true)} disabled={!canReady} style={{ width: '100%', marginTop: 24, padding: '16px 24px', border: '1px solid #22201B', borderRadius: 0, boxShadow: 'none', background: '#22201B', color: '#FBF8F1', fontFamily: callMono, fontSize: 14, opacity: canReady ? 1 : 0.45, cursor: canReady ? 'pointer' : 'not-allowed' }}>Ready</button>
         </section> : <section style={{ flex: 1, display: 'flex', flexDirection: 'column', textAlign: 'center' }}>
-          <div style={{ padding: '64px 0 40px' }}>
-            {!inCall && <p style={{ fontFamily: callMono, fontSize: 14, color: '#a2aaa9', margin: '0 0 16px' }}>(412) 555-0147</p>}
+          <div style={{ padding: '64px 0 40px', width: '100%' }}>
+            {!inCall && <p style={{ fontFamily: callMono, fontSize: 14, color: '#a2aaa9', margin: '0 0 16px', textAlign: 'center' }}>(412) 555-0147</p>}
             <h2 style={{ color: '#e8e7e1', fontSize: 'clamp(32px, 6vw, 48px)', fontWeight: 600, margin: '0 0 16px' }}>{bankName}</h2>
-            {connected ? <CallTimer session={session} /> : <p role="status" style={{ ...labelStyle, margin: 0 }}>
+            {connected ? <CallTimer session={session} /> : <p role="status" style={{ ...labelStyle, margin: 0, textAlign: 'center' }}>
               {ended ? 'CALL ENDED' : connecting ? 'CONNECTING…' : 'Fraud Prevention'}
             </p>}
           </div>
