@@ -118,7 +118,6 @@ function Call({ member, onDrillComplete }) {
   const [score, setScore] = useState(null);
   const [gutAnswer, setGutAnswer] = useState(null);
   const [scoreError, setScoreError] = useState('');
-  const scoreRequest = useRef(null);
   const [scoringLine, setScoringLine] = useState(0);
   const [log, setLog] = useState([]);
   const [name, setName] = useState(member.name);
@@ -169,6 +168,8 @@ function Call({ member, onDrillComplete }) {
   }, [member.id]);
 
   const requestScore = async () => {
+    setScoringLine(0);
+    setStage('scoring');
     setScoreError('');
     try {
       const response = await fetch(`http://localhost:8000/score/${backendSessionId.current}`, {
@@ -187,6 +188,7 @@ function Call({ member, onDrillComplete }) {
         } : null);
       }
       setScore(nextScore);
+      setStage('debrief');
       return nextScore;
     } catch (e) {
       console.error('scoring failed:', e);
@@ -232,7 +234,6 @@ function Call({ member, onDrillComplete }) {
           body: JSON.stringify(transcript),
         });
         if (!response.ok) throw new Error(`Transcript POST failed: ${response.status}`);
-        scoreRequest.current = requestScore();
         setStage('reflect');
       } catch (e) {
         console.error('transcript submission failed:', e);
@@ -240,17 +241,7 @@ function Call({ member, onDrillComplete }) {
     },
   });
 
-  const finishScoring = async () => {
-    setScoringLine(0);
-    setStage('scoring');
-    const result = await scoreRequest.current;
-    if (result) setStage('debrief');
-  };
-
-  const retryScore = async () => {
-    scoreRequest.current = requestScore();
-    await finishScoring();
-  };
+  const retryScore = () => requestScore();
 
   const completeQuiz = async (answers, gutAnswer) => {
     const response = await fetch(`http://localhost:8000/session/${backendSessionId.current}`, {
@@ -260,7 +251,7 @@ function Call({ member, onDrillComplete }) {
     });
     if (!response.ok) throw new Error(`Quiz POST failed: ${response.status}`);
     setGutAnswer(gutAnswer);
-    await finishScoring();
+    await requestScore();
   };
 
   const trainGap = async () => {
@@ -281,7 +272,6 @@ function Call({ member, onDrillComplete }) {
       }
       previousScore.current = score;
       backendSessionId.current = session_id;
-      scoreRequest.current = null;
       setScore(null);
       setGutAnswer(null);
       setScoreError('');
