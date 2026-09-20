@@ -2,6 +2,7 @@ import { ConversationProvider, useConversation } from '@elevenlabs/react';
 import { useEffect, useRef, useState } from 'react';
 import Quiz from './Quiz';
 import Debrief from './Debrief';
+import { Navigation, Landing, About, Dashboard, SignInModal } from './SiteViews';
 
 const SCORING_MESSAGES = [
   'Reading the transcript…',
@@ -26,10 +27,22 @@ function CallTimer({ session }) {
 }
 
 export default function App() {
+  const [view, setView] = useState('landing');
+  const [signInOpen, setSignInOpen] = useState(false);
   return (
-    <ConversationProvider agentId={import.meta.env.VITE_ELEVENLABS_AGENT_ID}>
-      <Call />
-    </ConversationProvider>
+    <div style={{ background: '#101213', color: '#e8e7e1', minHeight: '100svh', width: '100vw', alignSelf: 'center', fontFamily: 'system-ui, sans-serif', lineHeight: 1.5, textAlign: 'left' }}>
+      <Navigation view={view} onNavigate={setView} onSignIn={() => setSignInOpen(true)} />
+      {view === 'landing' && <Landing onDrill={() => setView('drill')} />}
+      {view === 'about' && <About />}
+      {view === 'dashboard' && <Dashboard onDrill={() => setView('drill')} />}
+      {view === 'drill' && <ConversationProvider agentId={import.meta.env.VITE_ELEVENLABS_AGENT_ID}>
+        <Call />
+      </ConversationProvider>}
+      {signInOpen && <SignInModal onClose={() => setSignInOpen(false)} onSignIn={() => {
+        setSignInOpen(false);
+        setView('dashboard');
+      }} />}
+    </div>
   );
 }
 
@@ -52,6 +65,7 @@ function Call() {
   const [scoringLine, setScoringLine] = useState(0);
   const [log, setLog] = useState([]);
   const [name, setName] = useState('Jordan Reyes');
+  const [lastFour, setLastFour] = useState('4417');
   const session = useRef(null);
 
   useEffect(() => {
@@ -228,7 +242,7 @@ function Call() {
       await conversation.startSession({
         dynamicVariables: {
           user_name: name.trim() || 'Jordan Reyes',
-          account_last4: '4417',
+          account_last4: lastFour,
           target_behavior: round === 2 ? previousScore.current.biggest_gap : 'none',
         },
       });
@@ -255,14 +269,16 @@ function Call() {
 
   return <PhoneCallScreen
     key={round} round={round} name={name} setName={setName}
+    lastFour={lastFour} setLastFour={setLastFour}
     sessionReady={sessionReady} sessionError={sessionError}
     conversation={conversation} start={start} session={session}
     log={log} debug={DEBUG}
   />;
 }
 
-function PhoneCallScreen({ round, name, setName, sessionReady, sessionError, conversation, start, session, log, debug }) {
+function PhoneCallScreen({ round, name, setName, lastFour, setLastFour, sessionReady, sessionError, conversation, start, session, log, debug }) {
   const [ready, setReady] = useState(false);
+  const canReady = sessionReady && name.trim() !== '' && lastFour.trim() !== '';
   const connected = conversation.status === 'connected';
   const connecting = conversation.status === 'connecting';
   const ended = conversation.status === 'disconnecting' || !Array.isArray(log);
@@ -286,13 +302,19 @@ function PhoneCallScreen({ round, name, setName, sessionReady, sessionError, con
 
         {!ready ? <section style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', width: '100%', maxWidth: 480, margin: '0 auto', padding: '40px 0' }}>
           <div style={{ border: '1px solid #343a3c', padding: 24 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 16 }}>
             <label style={{ display: 'block' }}>
               <span style={{ ...labelStyle, display: 'block', marginBottom: 16 }}>YOU ARE</span>
-              <input value={name} onChange={(e) => setName(e.target.value)} style={{ width: '100%', boxSizing: 'border-box', padding: '12px 0', border: 0, borderRadius: 0, boxShadow: 'none', background: 'transparent', color: '#e8e7e1', fontFamily: 'inherit', fontSize: 28 }} />
+              <input value={name} onChange={(e) => setName(e.target.value)} style={{ width: '100%', boxSizing: 'border-box', padding: '12px 8px', border: '1px solid #343a3c', borderRadius: 0, boxShadow: 'none', background: 'transparent', color: '#e8e7e1', fontFamily: 'inherit', fontSize: 28 }} />
             </label>
-            <p style={{ fontFamily: callMono, fontSize: 12, letterSpacing: '0.04em', borderTop: '1px solid #343a3c', paddingTop: 24, margin: '20px 0 0', color: '#a2aaa9' }}>NORTHBRIDGE SAVINGS · ••••4417</p>
+            <label style={{ display: 'block' }}>
+              <span style={{ ...labelStyle, display: 'block', marginBottom: 16 }}>ACCOUNT ENDS IN</span>
+              <input value={lastFour} onChange={(e) => setLastFour(e.target.value)} maxLength={4} style={{ width: '100%', boxSizing: 'border-box', padding: '12px 8px', border: '1px solid #343a3c', borderRadius: 0, boxShadow: 'none', background: 'transparent', color: '#e8e7e1', fontFamily: callMono, fontSize: 28 }} />
+            </label>
+            </div>
+            <p style={{ fontFamily: callMono, fontSize: 12, letterSpacing: '0.04em', borderTop: '1px solid #343a3c', paddingTop: 24, margin: '20px 0 0', color: '#a2aaa9' }}>NORTHBRIDGE SAVINGS · ••••{lastFour}</p>
           </div>
-          <button type="button" onClick={() => setReady(true)} disabled={!sessionReady} style={{ width: '100%', marginTop: 24, padding: '18px 24px', border: '1px solid #e8e7e1', borderRadius: 0, boxShadow: 'none', background: '#e8e7e1', color: '#101213', fontFamily: callMono, fontSize: 14, opacity: sessionReady ? 1 : 0.45, cursor: sessionReady ? 'pointer' : 'not-allowed' }}>Ready</button>
+          <button type="button" onClick={() => setReady(true)} disabled={!canReady} style={{ width: '100%', marginTop: 24, padding: '18px 24px', border: '1px solid #e8e7e1', borderRadius: 0, boxShadow: 'none', background: '#e8e7e1', color: '#101213', fontFamily: callMono, fontSize: 14, opacity: canReady ? 1 : 0.45, cursor: canReady ? 'pointer' : 'not-allowed' }}>Ready</button>
         </section> : <section style={{ flex: 1, display: 'flex', flexDirection: 'column', textAlign: 'center' }}>
           <div style={{ padding: 'clamp(48px, 12vh, 120px) 0 40px' }}>
             {!inCall && <p style={{ fontFamily: callMono, fontSize: 14, color: '#a2aaa9', margin: '0 0 20px' }}>(412) 555-0147</p>}
