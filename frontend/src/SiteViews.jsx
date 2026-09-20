@@ -95,7 +95,13 @@ const behaviorDescriptions = {
   authority_deference: 'Trusts anyone who sounds official',
 };
 
-export function Dashboard({ onDrill, onAddMember, members, onEditMember, familyName, setFamilyName }) {
+function formatDrillDate(timestamp) {
+  const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) return 'Not available';
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+export function Dashboard({ onDrill, onAddMember, members, familyName, setFamilyName }) {
   return <main style={page}>
     <p style={label}>HOUSEHOLD · DRILL HISTORY</p>
     <h1 style={heading}><EditableField value={familyName} onCommit={setFamilyName} label="household name" /></h1>
@@ -104,7 +110,7 @@ export function Dashboard({ onDrill, onAddMember, members, onEditMember, familyN
       const latest = member.drills[0];
       const recent = member.drills.slice(0, 3);
       // A change of five points or less across three drills is treated as flat.
-      const change = recent.length > 1 ? latest.score - recent[recent.length - 1].score : 0;
+      const change = recent.length > 1 ? latest.resistance_score - recent[recent.length - 1].resistance_score : 0;
       const note = !latest ? 'No baseline yet.'
         : recent.length < 3 ? `${member.name} is building a baseline. Keep drilling monthly.`
         : change > 5 ? `${member.name} is improving. Keep drilling monthly.`
@@ -112,29 +118,29 @@ export function Dashboard({ onDrill, onAddMember, members, onEditMember, familyN
         : `${member.name}'s resistance has declined. Worth a conversation.`;
       return <article key={member.id} style={{ border: '1px solid #E0E0DD', padding: 24, marginBottom: 32 }}>
         <h2 style={{ color: '#1A1A1A', fontSize: 28, fontWeight: 400, margin: '0 0 12px' }}>
-          <EditableField value={member.name} onCommit={(name) => onEditMember(member.id, { name })} label="member name" />, <span style={{ fontFamily: mono }}><EditableField value={member.age} onCommit={(age) => onEditMember(member.id, { age })} label="member age" numeric /></span>
+          {member.name}, <span style={{ fontFamily: mono }}>{member.age}</span>
         </h2>
         <p style={{ ...label, textTransform: 'uppercase' }}>{member.relationship}</p>
         {latest && <>
           <div style={grid}>
-            <div><p style={label}>LAST DRILL</p><p style={{ fontFamily: mono }}>{latest.date}</p></div>
-            <div><p style={label}>RESISTANCE SCORE</p><p style={{ fontFamily: mono, fontSize: 28 }}>{latest.score} / 100 <Trend current={latest.score} previous={member.drills[1]?.score} /></p></div>
-            <div><p style={label}>WEAKEST BEHAVIOR</p><p style={{ color: '#C0392B' }}>{behaviorDescriptions[latest.weakestBehavior] ?? 'Not available'}</p><p style={{ fontFamily: mono, fontSize: 11, color: '#6B6B6B', marginTop: 8, overflowWrap: 'anywhere' }}>{latest.weakestBehavior}</p></div>
+            <div><p style={label}>LAST DRILL</p><p style={{ fontFamily: mono }}>{formatDrillDate(latest.created_at)}</p></div>
+            <div><p style={label}>RESISTANCE SCORE</p><p style={{ fontFamily: mono, fontSize: 28 }}>{latest.resistance_score} / 100 <Trend current={latest.resistance_score} previous={member.drills[1]?.resistance_score} /></p></div>
+            <div><p style={label}>WEAKEST BEHAVIOR</p><p style={{ color: '#C0392B' }}>{behaviorDescriptions[latest.biggest_gap] ?? 'Not available'}</p><p style={{ fontFamily: mono, fontSize: 11, color: '#6B6B6B', marginTop: 8, overflowWrap: 'anywhere' }}>{latest.biggest_gap}</p></div>
           </div>
           <section style={{ ...section, marginTop: 24 }}>
             <h3 style={label}>PAST DRILLS</h3>
             <div style={{ overflowX: 'auto' }}><table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead><tr>{['Date', 'Scenario', 'Score'].map((title) => <th key={title} scope="col" style={{ ...label, padding: '12px 16px', borderBottom: '1px solid #E0E0DD', textTransform: 'uppercase', fontWeight: 400 }}>{title}</th>)}</tr></thead>
-              <tbody>{member.drills.map((drill, index) => <tr key={drill.id}>
-                <td style={{ fontFamily: mono, padding: 16, borderBottom: '1px solid #E0E0DD', whiteSpace: 'nowrap' }}>{drill.date}</td>
-                <td style={{ padding: 16, borderBottom: '1px solid #E0E0DD' }}>{drill.scenario}</td>
-                <td style={{ fontFamily: mono, padding: 16, borderBottom: '1px solid #E0E0DD' }}>{drill.score} <Trend current={drill.score} previous={member.drills[index + 1]?.score} /></td>
+              <tbody>{member.drills.map((drill, index) => <tr key={drill.session_id}>
+                <td style={{ fontFamily: mono, padding: 16, borderBottom: '1px solid #E0E0DD', whiteSpace: 'nowrap' }}>{formatDrillDate(drill.created_at)}</td>
+                <td style={{ padding: 16, borderBottom: '1px solid #E0E0DD' }}>{drill.scenario === 'bank_fraud' ? 'Bank fraud' : drill.scenario}</td>
+                <td style={{ fontFamily: mono, padding: 16, borderBottom: '1px solid #E0E0DD' }}>{drill.resistance_score} <Trend current={drill.resistance_score} previous={member.drills[index + 1]?.resistance_score} /></td>
               </tr>)}</tbody>
             </table></div>
           </section>
         </>}
         <p style={{ color: '#6B6B6B', fontSize: 15, margin: '20px 0' }}>{note}</p>
-        <button style={primary} onClick={() => onDrill(member.id)}>{latest ? 'Run a new drill' : 'Run first drill'}</button>
+        <button style={primary} onClick={() => onDrill(member)}>Run a drill</button>
       </article>;
     })}
     <p style={{ color: '#6B6B6B', fontSize: 13, marginTop: 20 }}>In this demo family view, results are shared with the family, not the participant.</p>
@@ -142,23 +148,36 @@ export function Dashboard({ onDrill, onAddMember, members, onEditMember, familyN
 }
 
 export function Setup({ onSubmit }) {
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
   const [details, setDetails] = useState({ name: '', age: '', relationship: 'Parent', bankName: '', lastFour: '' });
   const field = { display: 'block', width: '100%', boxSizing: 'border-box', border: '1px solid #E0E0DD', borderRadius: 0, padding: 14, marginTop: 10, background: '#FAFAF8', color: '#1A1A1A', font: 'inherit' };
   const update = (key) => (event) => setDetails((previous) => ({ ...previous, [key]: event.target.value }));
   return <main style={page}>
     <p style={label}>HOUSEHOLD · SETUP</p>
     <h1 style={heading}>Add a family member</h1>
-    <form onSubmit={(event) => {
+    <form onSubmit={async (event) => {
       event.preventDefault();
+      if (submitting) return;
       if (!details.name.trim() || !details.bankName.trim()) return;
-      onSubmit({ ...details, name: details.name.trim(), age: Number(details.age), bankName: details.bankName.trim() });
+      setSubmitting(true);
+      setError('');
+      try {
+        await onSubmit({ ...details, name: details.name.trim(), age: Number(details.age), bankName: details.bankName.trim() });
+      } catch (error) {
+        console.error('member creation failed:', error);
+        setError('Could not add this member. Please try again.');
+      } finally {
+        setSubmitting(false);
+      }
     }} style={{ maxWidth: 600, display: 'grid', gap: 24 }}>
       <label style={label}>NAME<input required value={details.name} onChange={update('name')} style={field} /></label>
       <label style={label}>AGE<input required type="number" min="0" max="120" step="1" value={details.age} onChange={update('age')} style={field} /></label>
       <label style={label}>RELATIONSHIP TO YOU<select value={details.relationship} onChange={update('relationship')} style={field}>{['Parent', 'Grandparent', 'Spouse', 'Sibling', 'Other'].map((relationship) => <option key={relationship}>{relationship}</option>)}</select></label>
       <label style={label}>THEIR BANK<input required value={details.bankName} onChange={update('bankName')} style={field} /></label>
       <label style={label}>THEIR ACCOUNT LAST FOUR<input required inputMode="numeric" pattern="[0-9]{4}" maxLength={4} value={details.lastFour} onChange={update('lastFour')} style={field} /></label>
-      <button style={primary} type="submit">Add family member</button>
+      <button style={primary} type="submit" disabled={submitting}>{submitting ? 'Saving…' : 'Add family member'}</button>
+      {error && <p role="alert" style={{ color: '#C0392B' }}>{error}</p>}
     </form>
   </main>;
 }

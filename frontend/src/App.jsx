@@ -26,57 +26,67 @@ function CallTimer({ session }) {
   </span>;
 }
 
-function drillDate(daysAgo = 0) {
-  const date = new Date();
-  date.setDate(date.getDate() - daysAgo);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-}
-
 export default function App() {
   const [view, setView] = useState('landing');
   const [signInOpen, setSignInOpen] = useState(false);
   const [familyName, setFamilyName] = useState('The Chen family');
-  const [members, setMembers] = useState(() => [
-    { id: 'margaret', name: 'Margaret Chen', age: 74, relationship: 'Grandparent', scores: [72, 58, 41], weakest: 'independent_verification' },
-    { id: 'raymond', name: 'Raymond Chen', age: 71, relationship: 'Parent', scores: [56, 53, 55], weakest: 'authority_deference' },
-    { id: 'dolores', name: 'Dolores Vega', age: 79, relationship: 'Other', scores: [], weakest: null },
-  ].map(({ scores, weakest, ...member }) => ({
-    ...member, bankName: 'Northbridge Savings', lastFour: '4417',
-    drills: scores.map((score, index) => ({ id: `${member.id}-demo-${index}`, date: drillDate(index * 7), scenario: 'Bank fraud', score, weakestBehavior: weakest, demo: true })),
-  })));
-  const [selectedMemberId, setSelectedMemberId] = useState(null);
-  const activeView = members.length === 0 ? 'setup' : view;
-  const startMemberDrill = (id) => {
-    setSelectedMemberId(id);
+  const [members, setMembers] = useState([]);
+  const [membersLoaded, setMembersLoaded] = useState(false);
+  const [membersError, setMembersError] = useState('');
+  const [activeMember, setActiveMember] = useState(null);
+  const membersRequest = useRef(0);
+  const refreshMembers = useCallback(async () => {
+    const request = ++membersRequest.current;
+    try {
+      const response = await fetch('http://localhost:8000/members');
+      if (!response.ok) throw new Error(`Members GET failed: ${response.status}`);
+      const data = await response.json();
+      if (!Array.isArray(data) || data.some((member) => !member || !member.id || !Array.isArray(member.drills))) {
+        throw new Error('Invalid members response');
+      }
+      if (request !== membersRequest.current) return;
+      setMembers(data);
+      setMembersLoaded(true);
+      setMembersError('');
+    } catch (error) {
+      console.error('members fetch failed:', error);
+      if (request === membersRequest.current) setMembersError('Could not load family members. Please try again.');
+    }
+  }, []);
+  useEffect(() => {
+    // Updates occur only after the members network request settles.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (view === 'dashboard') void refreshMembers();
+  }, [view, refreshMembers]);
+  const activeView = view === 'dashboard' && membersLoaded && !membersError && members.length === 0 ? 'setup' : view;
+  const startMemberDrill = (member) => {
+    setActiveMember(member);
     setView('drill');
   };
-  const addMember = (details) => {
-    setMembers((previous) => [...previous, { ...details, id: crypto.randomUUID(), drills: [] }]);
+  const addMember = async (details) => {
+    const response = await fetch('http://localhost:8000/members', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: details.name, age: details.age, relationship: details.relationship,
+        bank_name: details.bankName, account_last4: details.lastFour }),
+    });
+    if (!response.ok) throw new Error(`Members POST failed: ${response.status}`);
+    await refreshMembers();
     setView('dashboard');
   };
-  const editMember = (id, changes) => {
-    setMembers((previous) => previous.map((member) => member.id === id ? { ...member, ...changes } : member));
-  };
-  const recordDrill = useCallback((score) => {
-    const row = {
-      id: score.session_id, date: drillDate(), scenario: 'Bank fraud',
-      score: score.behaviors.length ? Math.round(score.behaviors.reduce((sum, behavior) => sum + behavior.behavior_pct, 0) / score.behaviors.length) : 0,
-      weakestBehavior: score.biggest_gap,
-    };
-    setMembers((previous) => previous.map((member) => member.id !== selectedMemberId || member.drills.some((drill) => drill.id === row.id)
-      ? member : { ...member, drills: [row, ...member.drills] }));
-  }, [selectedMemberId]);
   return (
     <div style={{ background: '#FAFAF8', color: '#1A1A1A', minHeight: '100svh', width: '100vw', alignSelf: 'center', fontFamily: 'system-ui, sans-serif', lineHeight: 1.5, textAlign: 'left' }}>
       <Navigation view={activeView} onNavigate={setView} onSignIn={() => setSignInOpen(true)} />
+      {membersError && <p role="alert" style={{ color: '#C0392B', padding: '16px 32px' }}>{membersError} <button onClick={refreshMembers} style={{ background: 'transparent', color: 'inherit', border: '1px solid #E0E0DD', borderRadius: 0, padding: 8 }}>Try again</button></p>}
+      {activeView === 'dashboard' && !membersLoaded && !membersError && <p role="status" style={{ padding: 24 }}>Loading family members…</p>}
       {activeView === 'landing' && <Landing onDrill={() => setView('dashboard')} />}
       {activeView === 'about' && <About />}
       {activeView === 'setup' && <Setup onSubmit={addMember} />}
-      {activeView === 'dashboard' && <Dashboard onDrill={startMemberDrill}
-        onAddMember={() => setView('setup')} members={members} onEditMember={editMember}
+      {activeView === 'dashboard' && membersLoaded && <Dashboard onDrill={startMemberDrill}
+        onAddMember={() => setView('setup')} members={members}
         familyName={familyName} setFamilyName={setFamilyName} />}
-      {activeView === 'drill' && <ConversationProvider agentId={import.meta.env.VITE_ELEVENLABS_AGENT_ID}>
-        <Call onDrillComplete={recordDrill} />
+      {activeView === 'drill' && activeMember && <ConversationProvider agentId={import.meta.env.VITE_ELEVENLABS_AGENT_ID}>
+        <Call member={activeMember} onDrillComplete={refreshMembers} />
       </ConversationProvider>}
       {signInOpen && <SignInModal onClose={() => setSignInOpen(false)} onSignIn={() => {
         setSignInOpen(false);
@@ -86,7 +96,7 @@ export default function App() {
   );
 }
 
-function Call({ onDrillComplete }) {
+function Call({ member, onDrillComplete }) {
   const DEBUG = false;
   const [stage, setStage] = useState('call');
   const [round, setRound] = useState(1);
@@ -105,9 +115,9 @@ function Call({ onDrillComplete }) {
   const scoreRequest = useRef(null);
   const [scoringLine, setScoringLine] = useState(0);
   const [log, setLog] = useState([]);
-  const [name, setName] = useState('Jordan Reyes');
-  const [lastFour, setLastFour] = useState('4417');
-  const [bankName, setBankName] = useState('Northbridge Savings');
+  const [name, setName] = useState(member.name);
+  const [lastFour, setLastFour] = useState(member.account_last4);
+  const [bankName, setBankName] = useState(member.bank_name);
   const session = useRef(null);
 
   useEffect(() => {
@@ -130,7 +140,7 @@ function Call({ onDrillComplete }) {
         const response = await fetch('http://localhost:8000/session', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ quiz: {} }),
+          body: JSON.stringify({ quiz: {}, member_id: member.id }),
         });
         if (!response.ok) throw new Error(`Session POST failed: ${response.status}`);
         const { session_id } = await response.json();
@@ -150,7 +160,7 @@ function Call({ onDrillComplete }) {
       setSessionError('Could not create your session. Reload the page to try again.');
     });
     return () => { active = false; };
-  }, []);
+  }, [member.id]);
 
   const requestScore = async () => {
     setScoreError('');
@@ -256,7 +266,7 @@ function Call({ onDrillComplete }) {
       const response = await fetch('http://localhost:8000/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ quiz: {} }),
+        body: JSON.stringify({ quiz: {}, member_id: member.id }),
       });
       if (!response.ok) throw new Error(`Session POST failed: ${response.status}`);
       const { session_id } = await response.json();
@@ -289,7 +299,7 @@ function Call({ onDrillComplete }) {
       await navigator.mediaDevices.getUserMedia({ audio: true });
       await conversation.startSession({
         dynamicVariables: {
-          user_name: name.trim() || 'Jordan Reyes',
+          user_name: name.trim() || member.name,
           account_last4: lastFour,
           bank_name: bankName,
           target_behavior: round === 2 ? previousScore.current.biggest_gap : 'none',
