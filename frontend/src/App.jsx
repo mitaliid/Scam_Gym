@@ -2,7 +2,7 @@ import { ConversationProvider, useConversation } from '@elevenlabs/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Quiz from './Quiz';
 import Debrief from './Debrief';
-import { Navigation, Landing, About, Dashboard, SignInModal } from './SiteViews';
+import { Navigation, Landing, About, Dashboard, Setup, SignInModal } from './SiteViews';
 
 const SCORING_MESSAGES = [
   'Reading the transcript…',
@@ -36,30 +36,46 @@ export default function App() {
   const [view, setView] = useState('landing');
   const [signInOpen, setSignInOpen] = useState(false);
   const [familyName, setFamilyName] = useState('The Chen family');
-  const [memberName, setMemberName] = useState('Margaret Chen');
-  const [memberAge, setMemberAge] = useState(74);
-  const [drills, setDrills] = useState(() => [72, 58, 41].map((score, index) => ({
-    id: `demo-${index}`, date: drillDate(index * 7), scenario: 'Bank fraud', score,
-    weakestBehavior: 'Independent verification', demo: true,
+  const [members, setMembers] = useState(() => [
+    { id: 'margaret', name: 'Margaret Chen', age: 74, relationship: 'Grandparent', scores: [72, 58, 41], weakest: 'independent_verification' },
+    { id: 'raymond', name: 'Raymond Chen', age: 71, relationship: 'Parent', scores: [56, 53, 55], weakest: 'authority_deference' },
+    { id: 'dolores', name: 'Dolores Vega', age: 79, relationship: 'Other', scores: [], weakest: null },
+  ].map(({ scores, weakest, ...member }) => ({
+    ...member, bankName: 'Northbridge Savings', lastFour: '4417',
+    drills: scores.map((score, index) => ({ id: `${member.id}-demo-${index}`, date: drillDate(index * 7), scenario: 'Bank fraud', score, weakestBehavior: weakest, demo: true })),
   })));
+  const [selectedMemberId, setSelectedMemberId] = useState(null);
+  const activeView = members.length === 0 ? 'setup' : view;
+  const startMemberDrill = (id) => {
+    setSelectedMemberId(id);
+    setView('drill');
+  };
+  const addMember = (details) => {
+    setMembers((previous) => [...previous, { ...details, id: crypto.randomUUID(), drills: [] }]);
+    setView('dashboard');
+  };
+  const editMember = (id, changes) => {
+    setMembers((previous) => previous.map((member) => member.id === id ? { ...member, ...changes } : member));
+  };
   const recordDrill = useCallback((score) => {
     const row = {
       id: score.session_id, date: drillDate(), scenario: 'Bank fraud',
       score: score.behaviors.length ? Math.round(score.behaviors.reduce((sum, behavior) => sum + behavior.behavior_pct, 0) / score.behaviors.length) : 0,
-      weakestBehavior: score.behaviors.find((behavior) => behavior.name === score.biggest_gap)?.label ?? 'Not available',
+      weakestBehavior: score.biggest_gap,
     };
-    setDrills((previous) => previous.some((drill) => drill.id === row.id) ? previous : [row, ...previous]);
-  }, []);
+    setMembers((previous) => previous.map((member) => member.id !== selectedMemberId || member.drills.some((drill) => drill.id === row.id)
+      ? member : { ...member, drills: [row, ...member.drills] }));
+  }, [selectedMemberId]);
   return (
     <div style={{ background: '#FAFAF8', color: '#1A1A1A', minHeight: '100svh', width: '100vw', alignSelf: 'center', fontFamily: 'system-ui, sans-serif', lineHeight: 1.5, textAlign: 'left' }}>
-      <Navigation view={view} onNavigate={setView} onSignIn={() => setSignInOpen(true)} />
-      {view === 'landing' && <Landing onDrill={() => setView('drill')} />}
-      {view === 'about' && <About />}
-      {view === 'dashboard' && <Dashboard onDrill={() => setView('drill')}
-        familyName={familyName} setFamilyName={setFamilyName}
-        memberName={memberName} setMemberName={setMemberName}
-        memberAge={memberAge} setMemberAge={setMemberAge} drills={drills} />}
-      {view === 'drill' && <ConversationProvider agentId={import.meta.env.VITE_ELEVENLABS_AGENT_ID}>
+      <Navigation view={activeView} onNavigate={setView} onSignIn={() => setSignInOpen(true)} />
+      {activeView === 'landing' && <Landing onDrill={() => setView('dashboard')} />}
+      {activeView === 'about' && <About />}
+      {activeView === 'setup' && <Setup onSubmit={addMember} />}
+      {activeView === 'dashboard' && <Dashboard onDrill={startMemberDrill}
+        onAddMember={() => setView('setup')} members={members} onEditMember={editMember}
+        familyName={familyName} setFamilyName={setFamilyName} />}
+      {activeView === 'drill' && <ConversationProvider agentId={import.meta.env.VITE_ELEVENLABS_AGENT_ID}>
         <Call onDrillComplete={recordDrill} />
       </ConversationProvider>}
       {signInOpen && <SignInModal onClose={() => setSignInOpen(false)} onSignIn={() => {
