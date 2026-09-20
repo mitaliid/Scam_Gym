@@ -1,7 +1,7 @@
 const mono = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
 const colors = {
-  background: '#101213', text: '#e8e7e1', muted: '#a2aaa9',
-  border: '#343a3c', red: '#bc7979', cyan: '#78a5a8', track: '#202628',
+  background: '#FAFAF8', text: '#1A1A1A', muted: '#6B6B6B',
+  border: '#E0E0DD', red: '#C0392B', cyan: '#1F6F5C', track: '#EDEDEA',
 };
 const sectionStyle = { borderTop: `1px solid ${colors.border}`, padding: '32px 0' };
 const labelStyle = {
@@ -68,6 +68,7 @@ export default function Debrief({ score, onTrainGap, round = 1, comparison, trai
               return (
                 <article key={behavior.name} style={{
                   border: `1px solid ${critical ? colors.red : colors.border}`, padding: 20,
+                  background: critical ? '#FDF2F0' : colors.background,
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 20 }}>
                     <h3 style={{ fontSize: 20, fontWeight: 500, margin: 0 }}>{behavior.label}</h3>
@@ -75,7 +76,7 @@ export default function Debrief({ score, onTrainGap, round = 1, comparison, trai
                   </div>
                   <div style={{ display: 'grid', gap: 8 }}>
                     {[
-                      { label: 'SAID', value: behavior.knowledge_pct, color: '#8f999a' },
+                      { label: 'SAID', value: behavior.knowledge_pct, color: '#9A9A96' },
                       { label: 'DID', value: behavior.behavior_pct, color: didColor },
                     ].map((bar) => (
                       <div key={bar.label} style={{ display: 'grid', gridTemplateColumns: '40px minmax(0, 1fr) 52px', alignItems: 'center', gap: 12 }}>

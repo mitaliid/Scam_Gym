@@ -30,7 +30,7 @@ export default function App() {
   const [view, setView] = useState('landing');
   const [signInOpen, setSignInOpen] = useState(false);
   return (
-    <div style={{ background: '#101213', color: '#e8e7e1', minHeight: '100svh', width: '100vw', alignSelf: 'center', fontFamily: 'system-ui, sans-serif', lineHeight: 1.5, textAlign: 'left' }}>
+    <div style={{ background: '#FAFAF8', color: '#1A1A1A', minHeight: '100svh', width: '100vw', alignSelf: 'center', fontFamily: 'system-ui, sans-serif', lineHeight: 1.5, textAlign: 'left' }}>
       <Navigation view={view} onNavigate={setView} onSignIn={() => setSignInOpen(true)} />
       {view === 'landing' && <Landing onDrill={() => setView('drill')} />}
       {view === 'about' && <About />}
@@ -258,8 +258,8 @@ function Call() {
   if (stage === 'scoring') return (
     <div style={{ padding: 24, fontFamily: 'system-ui', maxWidth: 800 }}>
       {scoreError ? <>
-        <p role="alert">{scoreError}</p>
-        <button onClick={retryScore} style={{ padding: 8 }}>Try again</button>
+        <p role="alert" style={{ color: '#C0392B' }}>{scoreError}</p>
+        <button onClick={retryScore} style={{ padding: 8, background: '#1A1A1A', color: '#FAFAF8', border: '1px solid #1A1A1A', borderRadius: 0, boxShadow: 'none' }}>Try again</button>
       </> : <p role="status">{SCORING_MESSAGES[scoringLine]}</p>}
     </div>
   );
@@ -286,7 +286,7 @@ function PhoneCallScreen({ round, name, setName, lastFour, setLastFour, bankName
   const connecting = conversation.status === 'connecting';
   const ended = conversation.status === 'disconnecting' || !Array.isArray(log);
   const inCall = connected || ended;
-  const labelStyle = { fontFamily: callMono, fontSize: 11, letterSpacing: '0.16em', color: '#a2aaa9' };
+  const labelStyle = { fontFamily: callMono, fontSize: 11, letterSpacing: '0.16em', color: ready ? '#a2aaa9' : '#6B6B6B' };
   const circleStyle = {
     width: 88, height: 88, borderRadius: '50%', border: '1px solid #343a3c',
     boxShadow: 'none', color: '#101213', display: 'grid', placeItems: 'center', cursor: 'pointer',
@@ -296,32 +296,32 @@ function PhoneCallScreen({ round, name, setName, lastFour, setLastFour, bankName
   </svg>;
 
   return (
-    <main style={{ background: '#101213', color: '#e8e7e1', minHeight: '100svh', width: '100vw', alignSelf: 'center', padding: '32px clamp(16px, 5vw, 56px)', boxSizing: 'border-box', fontFamily: 'system-ui, sans-serif', textAlign: 'left', lineHeight: 1.5, display: 'flex', flexDirection: 'column' }}>
+    <main style={{ background: ready ? '#101213' : '#FAFAF8', color: ready ? '#e8e7e1' : '#1A1A1A', colorScheme: ready ? 'dark' : 'light', minHeight: '100svh', width: '100vw', alignSelf: 'center', padding: '32px clamp(16px, 5vw, 56px)', boxSizing: 'border-box', fontFamily: 'system-ui, sans-serif', textAlign: 'left', lineHeight: 1.5, display: 'flex', flexDirection: 'column' }}>
       <div style={{ maxWidth: 960, width: '100%', margin: '0 auto', flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <header style={{ fontFamily: callMono, fontSize: 11, letterSpacing: '0.08em', textAlign: 'right', color: '#a2aaa9', paddingBottom: 28, borderBottom: '1px solid #343a3c' }}>
+        <header style={{ fontFamily: callMono, fontSize: 11, letterSpacing: '0.08em', textAlign: 'right', color: ready ? '#a2aaa9' : '#6B6B6B', paddingBottom: 28, borderBottom: `1px solid ${ready ? '#343a3c' : '#E0E0DD'}` }}>
           SCAM GYM · ROUND {round}
         </header>
-        {sessionError && <p role="alert" style={{ color: '#bc7979', marginTop: 24 }}>{sessionError}</p>}
+        {sessionError && <p role="alert" style={{ color: ready ? '#bc7979' : '#C0392B', marginTop: 24 }}>{sessionError}</p>}
 
         {!ready ? <section style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', width: '100%', maxWidth: 480, margin: '0 auto', padding: '40px 0' }}>
-          <div style={{ border: '1px solid #343a3c', padding: 24 }}>
+          <div style={{ border: '1px solid #E0E0DD', padding: 24 }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 16 }}>
             <label style={{ display: 'block' }}>
               <span style={{ ...labelStyle, display: 'block', marginBottom: 16 }}>YOU ARE</span>
-              <input value={name} onChange={(e) => setName(e.target.value)} style={{ width: '100%', boxSizing: 'border-box', padding: '12px 8px', border: '1px solid #343a3c', borderRadius: 0, boxShadow: 'none', background: 'transparent', color: '#e8e7e1', fontFamily: 'inherit', fontSize: 28 }} />
+              <input value={name} onChange={(e) => setName(e.target.value)} style={{ width: '100%', boxSizing: 'border-box', padding: '12px 8px', border: '1px solid #E0E0DD', borderRadius: 0, boxShadow: 'none', background: 'transparent', color: '#1A1A1A', fontFamily: 'inherit', fontSize: 28 }} />
             </label>
             <label style={{ display: 'block' }}>
               <span style={{ ...labelStyle, display: 'block', marginBottom: 16 }}>ACCOUNT ENDS IN</span>
-              <input value={lastFour} onChange={(e) => setLastFour(e.target.value)} maxLength={4} style={{ width: '100%', boxSizing: 'border-box', padding: '12px 8px', border: '1px solid #343a3c', borderRadius: 0, boxShadow: 'none', background: 'transparent', color: '#e8e7e1', fontFamily: callMono, fontSize: 28 }} />
+              <input value={lastFour} onChange={(e) => setLastFour(e.target.value)} maxLength={4} style={{ width: '100%', boxSizing: 'border-box', padding: '12px 8px', border: '1px solid #E0E0DD', borderRadius: 0, boxShadow: 'none', background: 'transparent', color: '#1A1A1A', fontFamily: callMono, fontSize: 28 }} />
             </label>
             <label style={{ display: 'block' }}>
               <span style={{ ...labelStyle, display: 'block', marginBottom: 16 }}>BANK</span>
-              <input value={bankName} onChange={(e) => setBankName(e.target.value)} style={{ width: '100%', boxSizing: 'border-box', padding: '12px 8px', border: '1px solid #343a3c', borderRadius: 0, boxShadow: 'none', background: 'transparent', color: '#e8e7e1', fontFamily: 'inherit', fontSize: 28 }} />
+              <input value={bankName} onChange={(e) => setBankName(e.target.value)} style={{ width: '100%', boxSizing: 'border-box', padding: '12px 8px', border: '1px solid #E0E0DD', borderRadius: 0, boxShadow: 'none', background: 'transparent', color: '#1A1A1A', fontFamily: 'inherit', fontSize: 28 }} />
             </label>
             </div>
-            <p style={{ fontFamily: callMono, fontSize: 12, letterSpacing: '0.04em', borderTop: '1px solid #343a3c', paddingTop: 24, margin: '20px 0 0', color: '#a2aaa9' }}>{bankName} · ••••{lastFour}</p>
+            <p style={{ fontFamily: callMono, fontSize: 12, letterSpacing: '0.04em', borderTop: '1px solid #E0E0DD', paddingTop: 24, margin: '20px 0 0', color: '#6B6B6B' }}>{bankName} · ••••{lastFour}</p>
           </div>
-          <button type="button" onClick={() => setReady(true)} disabled={!canReady} style={{ width: '100%', marginTop: 24, padding: '18px 24px', border: '1px solid #e8e7e1', borderRadius: 0, boxShadow: 'none', background: '#e8e7e1', color: '#101213', fontFamily: callMono, fontSize: 14, opacity: canReady ? 1 : 0.45, cursor: canReady ? 'pointer' : 'not-allowed' }}>Ready</button>
+          <button type="button" onClick={() => setReady(true)} disabled={!canReady} style={{ width: '100%', marginTop: 24, padding: '18px 24px', border: '1px solid #1A1A1A', borderRadius: 0, boxShadow: 'none', background: '#1A1A1A', color: '#FAFAF8', fontFamily: callMono, fontSize: 14, opacity: canReady ? 1 : 0.45, cursor: canReady ? 'pointer' : 'not-allowed' }}>Ready</button>
         </section> : <section style={{ flex: 1, display: 'flex', flexDirection: 'column', textAlign: 'center' }}>
           <div style={{ padding: 'clamp(48px, 12vh, 120px) 0 40px' }}>
             {!inCall && <p style={{ fontFamily: callMono, fontSize: 14, color: '#a2aaa9', margin: '0 0 20px' }}>(412) 555-0147</p>}
@@ -344,7 +344,7 @@ function PhoneCallScreen({ round, name, setName, lastFour, setLastFour, bankName
           </div>
         </section>}
 
-        {debug && <pre style={{ background: '#111', color: '#0f0', padding: 12, marginTop: 16, overflow: 'auto' }}>{JSON.stringify(log, null, 2)}</pre>}
+        {debug && <pre style={{ background: ready ? '#111' : '#EDEDEA', color: ready ? '#e8e7e1' : '#1A1A1A', padding: 12, marginTop: 16, overflow: 'auto' }}>{JSON.stringify(log, null, 2)}</pre>}
       </div>
     </main>
   );
