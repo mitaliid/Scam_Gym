@@ -59,12 +59,16 @@ def knowledge_by_behavior(quiz_answers: dict[str, str]) -> dict[str, int]:
 
     for question in quiz["questions"]:
         chosen = quiz_answers.get(question["id"])
-        score = 0
-        for option in question["options"]:
-            if option["id"] == chosen:
-                score = int(option["score"])
-                break
-        buckets.setdefault(question["behavior"], []).append(score)
+        if chosen is None:
+            print(f"WARNING: no answer for {question['id']} — frontend sent {list(quiz_answers)}")
+            continue
+        match = next(
+            (o for o in question["options"] if o["id"] == chosen), None
+        )
+        if match is None:
+            print(f"WARNING: {question['id']} got unknown option {chosen!r}")
+            continue
+        buckets.setdefault(question["behavior"], []).append(int(match["score"]))
 
     return {
         behavior: round(sum(scores) / len(scores))
