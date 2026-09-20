@@ -41,11 +41,12 @@ export default function App() {
       const response = await fetch('http://localhost:8000/members');
       if (!response.ok) throw new Error(`Members GET failed: ${response.status}`);
       const data = await response.json();
-      if (!Array.isArray(data) || data.some((member) => !member || !member.id || !Array.isArray(member.drills))) {
+      const list = Array.isArray(data) ? data : data.members;
+      if (!Array.isArray(list) || list.some((member) => !member || !member.id || !Array.isArray(member.drills))) {
         throw new Error('Invalid members response');
       }
       if (request !== membersRequest.current) return;
-      setMembers(data);
+      setMembers(list);
       setMembersLoaded(true);
       setMembersError('');
     } catch (error) {
@@ -67,8 +68,13 @@ export default function App() {
     const response = await fetch('http://localhost:8000/members', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: details.name, age: details.age, relationship: details.relationship,
-        bank_name: details.bankName, account_last4: details.lastFour }),
+      body: JSON.stringify({
+        name: details.name,
+        age: Number(details.age) || null,
+        relationship: details.relationship.toLowerCase(),
+        bank_name: details.bankName,
+        account_last4: details.lastFour,
+      }),
     });
     if (!response.ok) throw new Error(`Members POST failed: ${response.status}`);
     await refreshMembers();
