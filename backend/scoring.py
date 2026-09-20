@@ -347,5 +347,41 @@ def score_transcript(
         "behaviors": behaviors,
         "timeline": timeline,
         "biggest_gap": biggest_gap,
-        "summary_line": str(model_output.get("summary_line", "")).strip(),
+                "summary_line": build_summary_line(
+            next(b for b in behaviors if b["name"] == biggest_gap)
+        ),
     }
+
+BEHAVIOR_PHRASES = {
+    "urgency_resistance": "you wouldn't let yourself be rushed",
+    "independent_verification": "you'd hang up and call the bank yourself",
+    "information_withholding": "you wouldn't give out your account details",
+    "authority_deference": "you wouldn't just take the caller's word for it",
+}
+
+
+def _mmss(ts: float) -> str:
+    return f"{int(ts) // 60}:{int(ts) % 60:02d}"
+
+
+def build_summary_line(behavior: dict[str, Any]) -> str:
+    """Deterministic headline: their own confidence, then their own words."""
+    pct = behavior["knowledge_pct"]
+    if pct >= 90:
+        sure = "very sure"
+    elif pct >= 40:
+        sure = "fairly sure"
+    elif pct > 0:
+        sure = "not very sure"
+    else:
+        sure = "not at all sure"
+
+    phrase = BEHAVIOR_PHRASES.get(behavior["name"], "you'd hold the line")
+    first = f"You were {sure} {phrase}."
+
+    if not behavior["evidence"]:
+        return first
+
+    top = behavior["evidence"][0]
+    quote = top["quote"].rstrip(".!? ")
+    return f'{first} At {_mmss(top["ts"])} you said "{quote}."'

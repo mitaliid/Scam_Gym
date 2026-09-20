@@ -1,5 +1,5 @@
 {
-  "session_id": "b471494bd4eb",
+  "session_id": "fixture_compliant",
   "behaviors": [
     {
       "name": "urgency_resistance",
@@ -62,7 +62,7 @@
       "good": false
     },
     {
-      "ts": 47.8,
+      "ts": 34.1,
       "tactic": "authority",
       "user_response": "gave account digits",
       "good": false
@@ -70,16 +70,10 @@
     {
       "ts": 74.6,
       "tactic": "urgency",
-      "user_response": "asked about calling bank",
-      "good": false
-    },
-    {
-      "ts": 80.2,
-      "tactic": "authority",
-      "user_response": "accepted callback number",
+      "user_response": "agreed to proceed",
       "good": false
     }
   ],
   "biggest_gap": "information_withholding",
-  "summary_line": "You were very sure you would resist urgency, verify independently, withhold information, and question authority. At 0:56 you supplied the last four digits of your account."
+  "summary_line": "You were very sure you wouldn't give out your account details. At 0:56 you said \"Sure, it's 4417.\""
 }

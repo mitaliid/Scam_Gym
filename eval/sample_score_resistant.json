@@ -21,7 +21,7 @@
       "behavior_pct": 100,
       "evidence": [
         {
-          "quote": "I'm not calling a number you gave me. I'm hanging up and calling the number on the back of my card.",
+          "quote": "I'm hanging up and calling the number on the back of my card.",
           "ts": 78.3,
           "verdict": "resisted"
         }
@@ -58,28 +58,28 @@
     {
       "ts": 15.4,
       "tactic": "urgency",
-      "user_response": "refused to rush",
+      "user_response": "refused rush",
       "good": true
     },
     {
       "ts": 33.7,
       "tactic": "authority",
-      "user_response": "questioned case number",
+      "user_response": "questioned number",
       "good": true
     },
     {
       "ts": 51.9,
       "tactic": "small_ask",
-      "user_response": "refused to confirm",
+      "user_response": "refused confirm",
       "good": true
     },
     {
       "ts": 68.8,
       "tactic": "real_ask",
-      "user_response": "hung up to call back",
+      "user_response": "refused callback",
       "good": true
     }
   ],
   "biggest_gap": "urgency_resistance",
-  "summary_line": "You predicted you would resist urgency half the time and verify independently half the time. At 0:26 you refused to act under a four-minute clock."
+  "summary_line": "You were fairly sure you wouldn't let yourself be rushed. At 0:26 you said \"Then it clears. I'm not making decisions on a four minute clock.\""
 }
