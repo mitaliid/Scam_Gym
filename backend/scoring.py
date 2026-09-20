@@ -150,7 +150,13 @@ maximum 4 entries. ts is the agent's timestamp for that tactic.
 }}
 
 Every quote must be copied verbatim from a USER line above, with that line's
-timestamp. user_response is at most 6 words. Reply with only the JSON object."""
+timestamp. Choose the most substantive user line that demonstrates the
+behavior - one that shows what they actually did or gave away. Never cite a
+bare filler response such as "Okay", "Yeah", "Sure", "Right", "Mhm" or "Uh
+huh" as evidence unless the transcript contains no other user line relevant
+to that behavior. Prefer a line where the user supplies information, agrees
+to an action, or pushes back. Do not reuse the same quote for more than one
+behavior. user_response is at most 6 words. Reply with only the JSON object."""
 
 
 def _extract_json(text: str) -> dict[str, Any]:
