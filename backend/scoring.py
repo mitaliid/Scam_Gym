@@ -149,14 +149,9 @@ maximum 4 entries. ts is the agent's timestamp for that tactic.
     "summary_line": "Two short sentences. First: what the user predicted about themselves, using their own confidence level. Second: the single worst thing they actually did, with the timestamp as m:ss. Second person, past tense, no advice, no list. Example: 'You were very sure you would verify. At 1:14 you told him to go ahead.'"
 }}
 
-Every quote must be copied verbatim from a USER line above, with that line's
-timestamp. Choose the most substantive user line that demonstrates the
-behavior - one that shows what they actually did or gave away. Never cite a
-bare filler response such as "Okay", "Yeah", "Sure", "Right", "Mhm" or "Uh
-huh" as evidence unless the transcript contains no other user line relevant
-to that behavior. Prefer a line where the user supplies information, agrees
-to an action, or pushes back. Do not reuse the same quote for more than one
-behavior. user_response is at most 6 words. Reply with only the JSON object."""
+Never cite a bare filler line such as "Okay", "Yeah", "Sure" or "Right" as
+evidence. Pick a longer user line instead. Do not reuse a quote across
+behaviors. user_response is at most 6 words. Reply with only the JSON object."""
 
 
 def _extract_json(text: str) -> dict[str, Any]:
@@ -211,7 +206,7 @@ def _create(messages: list[dict[str, str]]):
         "model": MODEL,
         "messages": messages,
         "temperature": 0.2,
-        "max_tokens": 3000,
+        "max_tokens": 5000,
     }
 
     if _no_think_supported:
