@@ -47,7 +47,7 @@ class Turn(BaseModel):
 
 class Transcript(BaseModel):
     session_id: str
-    scenario: str  # e.g. "bank_fraud" — matches a file in scenarios/
+    scenario: str | None = None  # e.g. "bank_fraud" — matches a file in scenarios/
     turns: list[Turn]
     duration_sec: float
 
@@ -97,6 +97,7 @@ class CreateSessionRequest(BaseModel):
     # Quiz shape stays loose at CP1 — it isn't the integration risk, and
     # locking it now would block the quiz screen at CP3.
     quiz: dict[str, Any] = Field(default_factory=dict)
+    member_id: str | None = None
 
 
 class CreateSessionResponse(BaseModel):
@@ -111,9 +112,44 @@ class TranscriptResponse(BaseModel):
 class SessionResponse(BaseModel):
     id: str
     created_at: str
+    member_id: str | None
     quiz: dict[str, Any] | None
     transcript: Transcript | None
     score: Score | None
+
+
+Relationship = Literal["parent", "grandparent", "spouse", "sibling", "other"]
+
+
+class CreateMemberRequest(BaseModel):
+    name: str
+    age: int | None = None
+    relationship: Relationship | None = None
+    bank_name: str | None = None
+    account_last4: str | None = None
+
+
+class Drill(BaseModel):
+    session_id: str
+    created_at: str
+    scenario: str
+    resistance_score: int
+    biggest_gap: str
+
+
+class Member(BaseModel):
+    id: str
+    name: str
+    age: int | None
+    relationship: Relationship | None
+    bank_name: str | None
+    account_last4: str | None
+    created_at: str
+    drills: list[Drill] = Field(default_factory=list)
+
+
+class MembersResponse(BaseModel):
+    members: list[Member]
 
 
 # --------------------------------------------------------------------------
@@ -197,9 +233,44 @@ def create_session(
     body: CreateSessionRequest | None = None,
 ) -> CreateSessionResponse:
     """Quiz is optional here — answers arrive after the call, via PATCH."""
+    if body and body.member_id and not db.member_exists(body.member_id):
+        raise HTTPException(404, f"no member with id {body.member_id!r}")
     session_id = uuid.uuid4().hex[:12]
-    db.create_session(session_id, body.quiz if body else {})
+    db.create_session(session_id, body.quiz if body else {}, body.member_id if body else None)
     return CreateSessionResponse(session_id=session_id)
+
+
+@app.post("/members", response_model=Member)
+def create_member(body: CreateMemberRequest) -> Member:
+    member = db.create_member(
+        uuid.uuid4().hex[:12],
+        body.name,
+        body.age,
+        body.relationship,
+        body.bank_name,
+        body.account_last4,
+    )
+    return Member(**member)
+
+
+@app.get("/members", response_model=MembersResponse)
+def get_members() -> MembersResponse:
+    return MembersResponse(members=db.get_members())
+
+
+@app.get("/members/{member_id}", response_model=Member)
+def get_member(member_id: str) -> Member:
+    member = db.get_member(member_id)
+    if member is None:
+        raise HTTPException(404, f"no member with id {member_id!r}")
+    return Member(**member)
+
+
+@app.delete("/members/{member_id}")
+def delete_member(member_id: str) -> dict[str, bool]:
+    if not db.delete_member(member_id):
+        raise HTTPException(404, f"no member with id {member_id!r}")
+    return {"ok": True}
 
 
 @app.patch("/session/{session_id}")
