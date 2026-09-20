@@ -212,6 +212,9 @@ function Call() {
       <h2>Incoming call</h2>
       <p style={{ fontFamily: 'ui-monospace, monospace', fontSize: 12, letterSpacing: '0.16em' }}>ROUND {round}</p>
       <p>Status: <strong>{conversation.status}</strong></p>
+      <p style={{ opacity: 0.7 }}>
+        You are {name}. Your Northbridge account ends in 4417.
+      </p>
       {sessionError && <p role="alert">{sessionError}</p>}
 
       <input value={name} onChange={(e) => setName(e.target.value)} style={{ padding: 8, marginRight: 8 }} />
