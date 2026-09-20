@@ -5,7 +5,7 @@ const colors = {
 };
 const sectionStyle = { borderTop: `1px solid ${colors.border}`, padding: '32px 0' };
 const labelStyle = {
-  fontFamily: mono, fontSize: 11, fontWeight: 400, letterSpacing: '0.16em',
+  fontFamily: mono, fontSize: 13, fontWeight: 400, letterSpacing: '0.16em',
   lineHeight: 1.5, color: colors.muted, margin: '0 0 24px',
 };
 
@@ -27,7 +27,7 @@ export default function Debrief({ score, onTrainGap, round = 1, comparison, trai
       <div style={{ maxWidth: 960, margin: '0 auto' }}>
         {round === 2 && comparison && <section style={{ border: `1px solid ${colors.border}`, padding: 20, marginBottom: 32 }}>
           <h2 style={labelStyle}>TARGETED BEHAVIOR · ROUND COMPARISON</h2>
-          <h3 style={{ fontSize: 17, fontWeight: 500, margin: '0 0 20px' }}>{comparison.label}</h3>
+          <h3 style={{ fontSize: 20, fontWeight: 500, margin: '0 0 20px' }}>{comparison.label}</h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 12 }}>
             {[
               { label: 'ROUND 1', value: `${comparison.round1}%`, color: colors.text },
@@ -49,7 +49,7 @@ export default function Debrief({ score, onTrainGap, round = 1, comparison, trai
         <section style={sectionStyle}>
           <h2 style={labelStyle}>YOUR RESULT</h2>
           <h1 style={{
-            fontSize: 40, lineHeight: 1.2, fontWeight: 400, letterSpacing: '-0.02em',
+            fontSize: 44, lineHeight: 1.2, fontWeight: 400, letterSpacing: '-0.02em',
             color: colors.text, margin: '0 0 24px',
           }}>{score.summary_line}</h1>
           {gap && <p style={{ margin: 0, fontSize: 15, color: colors.muted }}>
@@ -70,7 +70,7 @@ export default function Debrief({ score, onTrainGap, round = 1, comparison, trai
                   border: `1px solid ${critical ? colors.red : colors.border}`, padding: 20,
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 20 }}>
-                    <h3 style={{ fontSize: 17, fontWeight: 500, margin: 0 }}>{behavior.label}</h3>
+                    <h3 style={{ fontSize: 20, fontWeight: 500, margin: 0 }}>{behavior.label}</h3>
                     {critical && <span style={{ ...labelStyle, color: colors.red, margin: 0 }}>CRITICAL GAP</span>}
                   </div>
                   <div style={{ display: 'grid', gap: 8 }}>
@@ -84,13 +84,13 @@ export default function Debrief({ score, onTrainGap, round = 1, comparison, trai
                           style={{ height: 28, background: colors.track }}>
                           <div style={{ width: `${bar.value}%`, height: '100%', background: bar.color }} />
                         </div>
-                        <span style={{ fontFamily: mono, fontSize: 14, textAlign: 'right', color: bar.color }}>{bar.value}%</span>
+                        <span style={{ fontFamily: mono, fontSize: 16, textAlign: 'right', color: bar.color }}>{bar.value}%</span>
                       </div>
                     ))}
                   </div>
                   {behavior.evidence.length > 0 && <div style={{ marginTop: 20, display: 'grid', gap: 10 }}>
                     {behavior.evidence.map((item, index) => (
-                      <blockquote key={index} style={{ margin: 0, display: 'flex', alignItems: 'baseline', gap: 12, fontSize: 13, color: colors.muted }}>
+                      <blockquote key={index} style={{ margin: 0, display: 'flex', alignItems: 'baseline', gap: 12, fontSize: 15, color: colors.muted }}>
                         <span style={{ fontFamily: mono, flexShrink: 0 }}>{timestamp(item.ts)}</span>
                         <em>“{item.quote}”</em>
                       </blockquote>

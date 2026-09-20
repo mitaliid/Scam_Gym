@@ -66,6 +66,7 @@ function Call() {
   const [log, setLog] = useState([]);
   const [name, setName] = useState('Jordan Reyes');
   const [lastFour, setLastFour] = useState('4417');
+  const [bankName, setBankName] = useState('Northbridge Savings');
   const session = useRef(null);
 
   useEffect(() => {
@@ -243,6 +244,7 @@ function Call() {
         dynamicVariables: {
           user_name: name.trim() || 'Jordan Reyes',
           account_last4: lastFour,
+          bank_name: bankName,
           target_behavior: round === 2 ? previousScore.current.biggest_gap : 'none',
         },
       });
@@ -270,15 +272,16 @@ function Call() {
   return <PhoneCallScreen
     key={round} round={round} name={name} setName={setName}
     lastFour={lastFour} setLastFour={setLastFour}
+    bankName={bankName} setBankName={setBankName}
     sessionReady={sessionReady} sessionError={sessionError}
     conversation={conversation} start={start} session={session}
     log={log} debug={DEBUG}
   />;
 }
 
-function PhoneCallScreen({ round, name, setName, lastFour, setLastFour, sessionReady, sessionError, conversation, start, session, log, debug }) {
+function PhoneCallScreen({ round, name, setName, lastFour, setLastFour, bankName, setBankName, sessionReady, sessionError, conversation, start, session, log, debug }) {
   const [ready, setReady] = useState(false);
-  const canReady = sessionReady && name.trim() !== '' && lastFour.trim() !== '';
+  const canReady = sessionReady && name.trim() !== '' && lastFour.trim() !== '' && bankName.trim() !== '';
   const connected = conversation.status === 'connected';
   const connecting = conversation.status === 'connecting';
   const ended = conversation.status === 'disconnecting' || !Array.isArray(log);
@@ -302,7 +305,7 @@ function PhoneCallScreen({ round, name, setName, lastFour, setLastFour, sessionR
 
         {!ready ? <section style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', width: '100%', maxWidth: 480, margin: '0 auto', padding: '40px 0' }}>
           <div style={{ border: '1px solid #343a3c', padding: 24 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 16 }}>
             <label style={{ display: 'block' }}>
               <span style={{ ...labelStyle, display: 'block', marginBottom: 16 }}>YOU ARE</span>
               <input value={name} onChange={(e) => setName(e.target.value)} style={{ width: '100%', boxSizing: 'border-box', padding: '12px 8px', border: '1px solid #343a3c', borderRadius: 0, boxShadow: 'none', background: 'transparent', color: '#e8e7e1', fontFamily: 'inherit', fontSize: 28 }} />
@@ -311,14 +314,18 @@ function PhoneCallScreen({ round, name, setName, lastFour, setLastFour, sessionR
               <span style={{ ...labelStyle, display: 'block', marginBottom: 16 }}>ACCOUNT ENDS IN</span>
               <input value={lastFour} onChange={(e) => setLastFour(e.target.value)} maxLength={4} style={{ width: '100%', boxSizing: 'border-box', padding: '12px 8px', border: '1px solid #343a3c', borderRadius: 0, boxShadow: 'none', background: 'transparent', color: '#e8e7e1', fontFamily: callMono, fontSize: 28 }} />
             </label>
+            <label style={{ display: 'block' }}>
+              <span style={{ ...labelStyle, display: 'block', marginBottom: 16 }}>BANK</span>
+              <input value={bankName} onChange={(e) => setBankName(e.target.value)} style={{ width: '100%', boxSizing: 'border-box', padding: '12px 8px', border: '1px solid #343a3c', borderRadius: 0, boxShadow: 'none', background: 'transparent', color: '#e8e7e1', fontFamily: 'inherit', fontSize: 28 }} />
+            </label>
             </div>
-            <p style={{ fontFamily: callMono, fontSize: 12, letterSpacing: '0.04em', borderTop: '1px solid #343a3c', paddingTop: 24, margin: '20px 0 0', color: '#a2aaa9' }}>NORTHBRIDGE SAVINGS · ••••{lastFour}</p>
+            <p style={{ fontFamily: callMono, fontSize: 12, letterSpacing: '0.04em', borderTop: '1px solid #343a3c', paddingTop: 24, margin: '20px 0 0', color: '#a2aaa9' }}>{bankName} · ••••{lastFour}</p>
           </div>
           <button type="button" onClick={() => setReady(true)} disabled={!canReady} style={{ width: '100%', marginTop: 24, padding: '18px 24px', border: '1px solid #e8e7e1', borderRadius: 0, boxShadow: 'none', background: '#e8e7e1', color: '#101213', fontFamily: callMono, fontSize: 14, opacity: canReady ? 1 : 0.45, cursor: canReady ? 'pointer' : 'not-allowed' }}>Ready</button>
         </section> : <section style={{ flex: 1, display: 'flex', flexDirection: 'column', textAlign: 'center' }}>
           <div style={{ padding: 'clamp(48px, 12vh, 120px) 0 40px' }}>
             {!inCall && <p style={{ fontFamily: callMono, fontSize: 14, color: '#a2aaa9', margin: '0 0 20px' }}>(412) 555-0147</p>}
-            <h2 style={{ color: '#e8e7e1', fontSize: 'clamp(32px, 6vw, 48px)', fontWeight: 400, margin: '0 0 16px' }}>Northbridge Savings</h2>
+            <h2 style={{ color: '#e8e7e1', fontSize: 'clamp(32px, 6vw, 48px)', fontWeight: 400, margin: '0 0 16px' }}>{bankName}</h2>
             {connected ? <CallTimer session={session} /> : <p role="status" style={{ ...labelStyle, margin: 0 }}>
               {ended ? 'CALL ENDED' : connecting ? 'CONNECTING…' : 'Fraud Prevention'}
             </p>}
