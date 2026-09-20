@@ -1,12 +1,12 @@
-const mono = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
+const mono = '"JetBrains Mono", monospace';
 const colors = {
   background: '#FAFAF8', text: '#1A1A1A', muted: '#6B6B6B',
   border: '#E0E0DD', red: '#C0392B', cyan: '#1F6F5C', track: '#EDEDEA',
 };
-const sectionStyle = { borderTop: `1px solid ${colors.border}`, padding: '32px 0' };
+const sectionStyle = { borderTop: `1px solid ${colors.border}`, padding: '24px 0' };
 const labelStyle = {
   fontFamily: mono, fontSize: 13, fontWeight: 400, letterSpacing: '0.16em',
-  lineHeight: 1.5, color: colors.muted, margin: '0 0 24px',
+  lineHeight: 1.6, color: colors.muted, margin: '0 0 24px',
 };
 
 function timestamp(seconds) {
@@ -22,14 +22,14 @@ export default function Debrief({ score, onTrainGap, round = 1, comparison, trai
   return (
     <main style={{
       background: colors.background, color: colors.text, minHeight: '100svh',
-      padding: '32px clamp(16px, 5vw, 56px)', boxSizing: 'border-box',
-      fontFamily: 'system-ui, sans-serif', textAlign: 'left', lineHeight: 1.5,
+      padding: '24px 40px', boxSizing: 'border-box',
+      fontFamily: 'Inter, sans-serif', textAlign: 'left', lineHeight: 1.6,
     }}>
       <div style={{ maxWidth: 960, margin: '0 auto' }}>
-        {round === 2 && comparison && <section style={{ border: `1px solid ${colors.border}`, padding: 20, marginBottom: 32 }}>
+        {round === 2 && comparison && <section style={{ border: `1px solid ${colors.border}`, padding: 16, marginBottom: 24 }}>
           <h2 style={labelStyle}>TARGETED BEHAVIOR · ROUND COMPARISON</h2>
-          <h3 style={{ fontSize: 20, fontWeight: 500, margin: '0 0 20px' }}>{comparison.label}</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 12 }}>
+          <h3 style={{ fontSize: 20, fontWeight: 600, margin: '0 0 16px' }}>{comparison.label}</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8 }}>
             {[
               { label: 'ROUND 1', value: `${comparison.round1}%`, color: colors.text },
               { label: 'DELTA', value: `${delta > 0 ? '+' : ''}${delta} pp`, color: delta > 0 ? colors.cyan : delta < 0 ? colors.red : colors.muted },
@@ -42,21 +42,21 @@ export default function Debrief({ score, onTrainGap, round = 1, comparison, trai
         </section>}
         <header style={{
           fontFamily: mono, fontSize: 11, letterSpacing: '0.08em', textAlign: 'right',
-          color: colors.muted, paddingBottom: 28, overflowWrap: 'anywhere',
+          color: colors.muted, paddingBottom: 24, overflowWrap: 'anywhere',
         }}>
           SESSION {score.session_id} · SCAM GYM · ROUND {round}
         </header>
 
         <section style={sectionStyle}>
           <h2 style={labelStyle}>YOUR RESULT</h2>
-          {!allComplied && (gutAnswer === 'a' || gutAnswer === 'b') && <p style={{ fontSize: 15, color: colors.muted, margin: '0 0 16px' }}>
+          {!allComplied && (gutAnswer === 'a' || gutAnswer === 'b') && <p style={{ fontSize: 16, color: colors.muted, margin: '0 0 16px' }}>
             {gutAnswer === 'a' ? 'You said that call seemed real.' : "You weren't sure whether that call was real."}
           </p>}
           <h1 style={{
-            fontSize: 44, lineHeight: 1.2, fontWeight: 400, letterSpacing: '-0.02em',
+            fontSize: 44, lineHeight: 1.1, fontWeight: 600, letterSpacing: '-0.02em',
             color: colors.text, margin: '0 0 24px',
           }}>{allComplied ? "You complied with every tactic. That's the most common outcome — and exactly why this exists." : score.summary_line}</h1>
-          {!allComplied && gap && <p style={{ margin: 0, fontSize: 15, color: colors.muted }}>
+          {!allComplied && gap && <p style={{ margin: 0, fontSize: 16, color: colors.muted }}>
             You were <span style={{ fontFamily: mono, color: colors.text }}>{gap.knowledge_pct}%</span> sure.
             {' '}Under pressure you did <span style={{ fontFamily: mono, color: colors.text }}>{gap.behavior_pct}%</span>.
           </p>}
@@ -71,11 +71,11 @@ export default function Debrief({ score, onTrainGap, round = 1, comparison, trai
                 ? colors.red : colors.cyan;
               return (
                 <article key={behavior.name} style={{
-                  border: `1px solid ${critical ? colors.red : colors.border}`, padding: 20,
+                  border: `1px solid ${critical ? colors.red : colors.border}`, padding: 16,
                   background: critical ? '#FDF2F0' : colors.background,
                 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 20 }}>
-                    <h3 style={{ fontSize: 20, fontWeight: 500, margin: 0 }}>{behavior.label}</h3>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
+                    <h3 style={{ fontSize: 20, fontWeight: 600, margin: 0 }}>{behavior.label}</h3>
                     {critical && <span style={{ ...labelStyle, color: colors.red, margin: 0 }}>CRITICAL GAP</span>}
                   </div>
                   <div style={{ display: 'grid', gap: 8 }}>
@@ -83,7 +83,7 @@ export default function Debrief({ score, onTrainGap, round = 1, comparison, trai
                       { label: 'SAID', value: behavior.knowledge_pct, color: '#9A9A96' },
                       { label: 'DID', value: behavior.behavior_pct, color: didColor },
                     ].map((bar) => (
-                      <div key={bar.label} style={{ display: 'grid', gridTemplateColumns: '40px minmax(0, 1fr) 52px', alignItems: 'center', gap: 12 }}>
+                      <div key={bar.label} style={{ display: 'grid', gridTemplateColumns: '40px minmax(0, 1fr) 52px', alignItems: 'center', gap: 8 }}>
                         <span style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.08em', color: colors.muted }}>{bar.label}</span>
                         <div role="meter" aria-label={`${behavior.label}: ${bar.label}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={bar.value}
                           style={{ height: 28, background: colors.track }}>
@@ -93,9 +93,9 @@ export default function Debrief({ score, onTrainGap, round = 1, comparison, trai
                       </div>
                     ))}
                   </div>
-                  {behavior.evidence.length > 0 && <div style={{ marginTop: 20, display: 'grid', gap: 10 }}>
+                  {behavior.evidence.length > 0 && <div style={{ marginTop: 16, display: 'grid', gap: 8 }}>
                     {behavior.evidence.map((item, index) => (
-                      <blockquote key={index} style={{ margin: 0, display: 'flex', alignItems: 'baseline', gap: 12, fontSize: 15, color: colors.muted }}>
+                      <blockquote key={index} style={{ margin: 0, display: 'flex', alignItems: 'baseline', gap: 8, fontSize: 15, color: colors.muted }}>
                         <span style={{ fontFamily: mono, flexShrink: 0 }}>{timestamp(item.ts)}</span>
                         <em>“{item.quote}”</em>
                       </blockquote>
@@ -127,7 +127,7 @@ export default function Debrief({ score, onTrainGap, round = 1, comparison, trai
         {round === 1 && <footer style={sectionStyle}>
           {trainingError && <p role="alert" style={{ color: colors.red, marginBottom: 16 }}>{trainingError}</p>}
           <button type="button" onClick={onTrainGap} disabled={training} style={{
-            width: '100%', padding: '18px 24px', borderRadius: 0, boxShadow: 'none',
+            width: '100%', padding: '16px 24px', borderRadius: 0, boxShadow: 'none',
             border: `1px solid ${colors.text}`, background: colors.text, color: colors.background,
             fontFamily: mono, fontSize: 12, letterSpacing: '0.16em', cursor: training ? 'wait' : 'pointer',
           }}>{training ? 'CREATING ROUND 2…' : 'TRAIN THIS GAP'}</button>

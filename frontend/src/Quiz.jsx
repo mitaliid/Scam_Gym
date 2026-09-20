@@ -11,7 +11,7 @@ const QUESTIONS = [{
     { id: 'c', text: 'No, that was a scam' },
   ],
 }, ...quizData.questions];
-const mono = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
+const mono = '"JetBrains Mono", monospace';
 
 export default function Quiz({ onComplete }) {
   const [index, setIndex] = useState(0);
@@ -45,19 +45,19 @@ export default function Quiz({ onComplete }) {
   };
 
   return (
-    <main style={{ background: '#FAFAF8', color: '#1A1A1A', minHeight: '100svh', padding: '32px clamp(16px, 5vw, 56px)', boxSizing: 'border-box', fontFamily: 'system-ui, sans-serif', textAlign: 'left', lineHeight: 1.5 }}>
+    <main style={{ background: '#FAFAF8', color: '#1A1A1A', minHeight: '100svh', padding: '24px 40px', boxSizing: 'border-box', fontFamily: 'Inter, sans-serif', textAlign: 'left', lineHeight: 1.6 }}>
       <div style={{ maxWidth: 960, margin: '0 auto' }}>
-        <header style={{ borderBottom: '1px solid #E0E0DD', paddingBottom: 32 }}>
-          <h2 style={{ color: '#1A1A1A', fontSize: 40, lineHeight: 1.2, fontWeight: 400, letterSpacing: '-0.02em', margin: '0 0 24px' }}>What would you do?</h2>
-          <p style={{ color: '#6B6B6B', fontSize: 15, margin: 0 }}>Five quick questions. Thirty seconds.</p>
+        <header style={{ borderBottom: '1px solid #E0E0DD', paddingBottom: 24 }}>
+          <h2 style={{ color: '#1A1A1A', fontSize: 40, lineHeight: 1.1, fontWeight: 600, letterSpacing: '-0.02em', margin: '0 0 24px' }}>What would you do?</h2>
+          <p style={{ color: '#6B6B6B', fontSize: 16, margin: 0 }}>Five quick questions. Thirty seconds.</p>
         </header>
-        {QUESTIONS.map((question, questionIndex) => questionIndex === index && <section key={question.id} aria-labelledby={`question-${question.id}`} style={{ padding: '32px 0', borderBottom: '1px solid #E0E0DD' }}>
-          <p style={{ fontFamily: mono, fontSize: 13, color: '#6B6B6B', margin: '0 0 20px' }}>{index + 1} of {QUESTIONS.length}</p>
-          <h3 id={`question-${question.id}`} style={{ fontSize: 24, fontWeight: 400, lineHeight: 1.4, margin: '0 0 24px' }}>{question.prompt}</h3>
-          <div style={{ display: 'grid', gap: 12 }}>
+        {QUESTIONS.map((question, questionIndex) => questionIndex === index && <section key={question.id} aria-labelledby={`question-${question.id}`} style={{ padding: '24px 0', borderBottom: '1px solid #E0E0DD' }}>
+          <p style={{ fontFamily: mono, fontSize: 13, color: '#6B6B6B', margin: '0 0 16px' }}>{index + 1} of {QUESTIONS.length}</p>
+          <h3 id={`question-${question.id}`} style={{ fontSize: 24, fontWeight: 600, lineHeight: 1.1, margin: '0 0 24px' }}>{question.prompt}</h3>
+          <div style={{ display: 'grid', gap: 8 }}>
             {question.options.map((option) => (
               <button type="button" key={option.id} onClick={() => selectOption(option.id)} disabled={submitting}
-                style={{ display: 'flex', alignItems: 'baseline', gap: 20, width: '100%', padding: 20, border: '1px solid #E0E0DD', borderRadius: 0, boxShadow: 'none', background: 'transparent', color: '#1A1A1A', textAlign: 'left', fontFamily: 'inherit', fontSize: 16, cursor: submitting ? 'wait' : 'pointer', opacity: submitting ? 0.5 : 1 }}>
+                style={{ display: 'flex', alignItems: 'baseline', gap: 16, width: '100%', padding: 16, border: '1px solid #E0E0DD', borderRadius: 0, boxShadow: 'none', background: 'transparent', color: '#1A1A1A', textAlign: 'left', fontFamily: 'inherit', fontSize: 16, cursor: submitting ? 'wait' : 'pointer', opacity: submitting ? 0.5 : 1 }}>
                 <span aria-hidden="true" style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', color: '#6B6B6B' }}>{option.id.toUpperCase()}</span>
                 {option.text}
               </button>
@@ -65,7 +65,7 @@ export default function Quiz({ onComplete }) {
           </div>
         </section>)}
         {submitting && <p role="status" style={{ fontFamily: mono, fontSize: 12, color: '#6B6B6B', marginTop: 24 }}>Saving your answers…</p>}
-        {error && <p role="alert" style={{ color: '#C0392B', fontSize: 14, marginTop: 24 }}>{error}</p>}
+        {error && <p role="alert" style={{ color: '#C0392B', fontSize: 16, marginTop: 24 }}>{error}</p>}
       </div>
     </main>
   );
