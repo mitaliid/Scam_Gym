@@ -8,7 +8,8 @@
     "If no quote in the transcript supports a judgement, set behavior_pct to 0 and return an empty evidence array. Do not invent a quote to justify a higher score.",
     "Quotes must be copied character-for-character from the transcript. Never paraphrase. Never invent a line that was not said.",
     "verdict must be one of the values in 'verdicts'. tactic must be one of the values in 'tactics'.",
-    "Score only what the user did. Absence of a behavior is compliance, not a missing score."
+    "Score only what the user did. Absence of a behavior is compliance, not a missing score.",     "Do not cite the same quote for more than one behavior. Each behavior must be grounded in a different moment in the transcript.",
+    "If the user challenged, questioned, or pushed back at any point, cite that moment as evidence even when they later gave in. Partial resistance followed by compliance is verdict 'partial', not 'complied'."
   ],
   "behaviors": [
     {
