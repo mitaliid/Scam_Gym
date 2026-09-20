@@ -298,6 +298,12 @@ def score_session(session_id: str) -> Score:
         raise HTTPException(404, f"no session with id {session_id!r}")
     if row["transcript"] is None:
         raise HTTPException(409, "no transcript on this session yet")
+    if not row["quiz"]:
+        raise HTTPException(
+            409,
+            "no quiz answers on this session yet — PATCH /session/{id} must "
+            "complete before scoring, or every knowledge_pct will be 0",
+        )
 
     try:
         score = scoring.score_transcript(
