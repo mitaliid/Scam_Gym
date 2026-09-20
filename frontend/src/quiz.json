@@ -5,7 +5,7 @@
     {
       "id": "q1",
       "behavior": "urgency_resistance",
-      "prompt": "Next time, how sure are you that you'd refuse to be rushed?",
+      "prompt": "If a caller said you only had two minutes to act, how sure are you that you'd slow the call down anyway?",
       "options": [
         {
           "id": "a",
@@ -27,7 +27,7 @@
     {
       "id": "q2",
       "behavior": "independent_verification",
-      "prompt": "How sure are you that you'd hang up and call your bank yourself?",
+      "prompt": "How sure are you that you'd hang up and call your bank on the number from your own card?",
       "options": [
         {
           "id": "a",
@@ -49,7 +49,7 @@
     {
       "id": "q3",
       "behavior": "information_withholding",
-      "prompt": "How sure are you that you'd refuse to confirm any account details?",
+      "prompt": "How sure are you that you'd refuse to give out any part of your account number?",
       "options": [
         {
           "id": "a",
@@ -71,7 +71,7 @@
     {
       "id": "q4",
       "behavior": "authority_deference",
-      "prompt": "How sure are you that you'd make them prove who they are?",
+      "prompt": "How sure are you that you'd refuse to believe a caller was from your bank without proof?",
       "options": [
         {
           "id": "a",
