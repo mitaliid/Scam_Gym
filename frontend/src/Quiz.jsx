@@ -2,17 +2,31 @@ import { useState } from 'react';
 
 import quizData from './quiz.json';
 
-const QUESTIONS = quizData.questions;
+const QUESTIONS = [{
+  id: 'gut',
+  prompt: 'Do you think that was a real call from your bank?',
+  options: [
+    { id: 'a', text: 'Yes, probably real' },
+    { id: 'b', text: "I'm not sure" },
+    { id: 'c', text: 'No, that was a scam' },
+  ],
+}, ...quizData.questions];
 const mono = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
 
 export default function Quiz({ onComplete }) {
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState({});
+  const [gutAnswer, setGutAnswer] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
   const selectOption = async (optionId) => {
     if (submitting) return;
+    if (index === 0) {
+      setGutAnswer(optionId);
+      setIndex(1);
+      return;
+    }
     const nextAnswers = { ...answers, [QUESTIONS[index].id]: optionId };
     setAnswers(nextAnswers);
     if (index < QUESTIONS.length - 1) {
@@ -22,7 +36,7 @@ export default function Quiz({ onComplete }) {
     setSubmitting(true);
     setError('');
     try {
-      await onComplete(nextAnswers);
+      await onComplete(nextAnswers, gutAnswer);
     } catch (e) {
       console.error('quiz submission failed:', e);
       setError('Could not save your answers. Select an option to try again.');

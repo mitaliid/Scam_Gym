@@ -84,6 +84,7 @@ function Call({ onDrillComplete }) {
   const [sessionReady, setSessionReady] = useState(false);
   const [sessionError, setSessionError] = useState('');
   const [score, setScore] = useState(null);
+  const [gutAnswer, setGutAnswer] = useState(null);
   const [scoreError, setScoreError] = useState('');
   const scoreRequest = useRef(null);
   const [scoringLine, setScoringLine] = useState(0);
@@ -219,13 +220,14 @@ function Call({ onDrillComplete }) {
     await finishScoring();
   };
 
-  const completeQuiz = async (answers) => {
+  const completeQuiz = async (answers, gutAnswer) => {
     const response = await fetch(`http://localhost:8000/session/${backendSessionId.current}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ quiz: answers }),
     });
     if (!response.ok) throw new Error(`Quiz POST failed: ${response.status}`);
+    setGutAnswer(gutAnswer);
     await finishScoring();
   };
 
@@ -249,6 +251,7 @@ function Call({ onDrillComplete }) {
       backendSessionId.current = session_id;
       scoreRequest.current = null;
       setScore(null);
+      setGutAnswer(null);
       setScoreError('');
       setSessionError('');
       setLog([]);
@@ -293,7 +296,7 @@ function Call({ onDrillComplete }) {
   );
 
   if (stage === 'debrief') return <Debrief
-    score={score} round={round} comparison={comparison}
+    score={score} round={round} comparison={comparison} gutAnswer={gutAnswer}
     onTrainGap={trainGap} training={training} trainingError={trainingError}
   />;
 
