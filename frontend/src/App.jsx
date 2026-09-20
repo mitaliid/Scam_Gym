@@ -14,6 +14,12 @@ export default function App() {
 function Call() {
   const DEBUG = false;
   const [stage, setStage] = useState('call');
+  const [round, setRound] = useState(1);
+  const previousScore = useRef(null);
+  const trainingRequest = useRef(false);
+  const [training, setTraining] = useState(false);
+  const [trainingError, setTrainingError] = useState('');
+  const [comparison, setComparison] = useState(null);
   const backendSessionId = useRef(null);
   const sessionRequest = useRef(null);
   const [sessionReady, setSessionReady] = useState(false);
@@ -106,7 +112,18 @@ function Call() {
         method: 'POST',
       });
       if (!response.ok) throw new Error(`Score POST failed: ${response.status}`);
-      setScore(await response.json());
+      const nextScore = await response.json();
+      if (round === 2 && previousScore.current) {
+        const target = previousScore.current.biggest_gap;
+        const before = previousScore.current.behaviors.find((behavior) => behavior.name === target);
+        const after = nextScore.behaviors.find((behavior) => behavior.name === target);
+        setComparison(before && after ? {
+          label: before.label,
+          round1: before.behavior_pct,
+          round2: after.behavior_pct,
+        } : null);
+      }
+      setScore(nextScore);
       setStage('debrief');
     } catch (e) {
       console.error('scoring failed:', e);
@@ -124,6 +141,40 @@ function Call() {
     await requestScore();
   };
 
+  const trainGap = async () => {
+    if (round !== 1 || trainingRequest.current) return;
+    trainingRequest.current = true;
+    setTraining(true);
+    setTrainingError('');
+    try {
+      const response = await fetch('http://localhost:8000/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quiz: {} }),
+      });
+      if (!response.ok) throw new Error(`Session POST failed: ${response.status}`);
+      const { session_id } = await response.json();
+      if (typeof session_id !== 'string' || !session_id.trim()) {
+        throw new Error('Session response is missing a session_id');
+      }
+      previousScore.current = score;
+      backendSessionId.current = session_id;
+      setScore(null);
+      setScoreError('');
+      setSessionError('');
+      setLog([]);
+      setSessionReady(true);
+      setRound(2);
+      setStage('call');
+    } catch (e) {
+      console.error('training session creation failed:', e);
+      setTrainingError('Could not create round 2. Please try again.');
+    } finally {
+      trainingRequest.current = false;
+      setTraining(false);
+    }
+  };
+
   const start = async () => {
     setLog([]);
     try {
@@ -132,7 +183,7 @@ function Call() {
         dynamicVariables: {
           user_name: name,
           account_last4: '4417',
-          target_behavior: 'none',
+          target_behavior: round === 2 ? previousScore.current.biggest_gap : 'none',
         },
       });
     } catch (e) {
@@ -151,11 +202,15 @@ function Call() {
     </div>
   );
 
-  if (stage === 'debrief') return <Debrief score={score} />;
+  if (stage === 'debrief') return <Debrief
+    score={score} round={round} comparison={comparison}
+    onTrainGap={trainGap} training={training} trainingError={trainingError}
+  />;
 
   return (
     <div style={{ padding: 24, fontFamily: 'system-ui', maxWidth: 800 }}>
       <h2>Incoming call</h2>
+      <p style={{ fontFamily: 'ui-monospace, monospace', fontSize: 12, letterSpacing: '0.16em' }}>ROUND {round}</p>
       <p>Status: <strong>{conversation.status}</strong></p>
       {sessionError && <p role="alert">{sessionError}</p>}
 

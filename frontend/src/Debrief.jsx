@@ -14,8 +14,9 @@ function timestamp(seconds) {
   return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
 }
 
-export default function Debrief({ score }) {
+export default function Debrief({ score, onTrainGap, round = 1, comparison, training = false, trainingError = '' }) {
   const gap = score.behaviors.find((behavior) => behavior.name === score.biggest_gap);
+  const delta = comparison ? comparison.round2 - comparison.round1 : 0;
 
   return (
     <main style={{
@@ -24,11 +25,25 @@ export default function Debrief({ score }) {
       fontFamily: 'system-ui, sans-serif', textAlign: 'left', lineHeight: 1.5,
     }}>
       <div style={{ maxWidth: 960, margin: '0 auto' }}>
+        {round === 2 && comparison && <section style={{ border: `1px solid ${colors.border}`, padding: 20, marginBottom: 32 }}>
+          <h2 style={labelStyle}>TARGETED BEHAVIOR · ROUND COMPARISON</h2>
+          <h3 style={{ fontSize: 17, fontWeight: 500, margin: '0 0 20px' }}>{comparison.label}</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 12 }}>
+            {[
+              { label: 'ROUND 1', value: `${comparison.round1}%`, color: colors.text },
+              { label: 'DELTA', value: `${delta > 0 ? '+' : ''}${delta} pp`, color: delta > 0 ? colors.cyan : delta < 0 ? colors.red : colors.muted },
+              { label: 'ROUND 2', value: `${comparison.round2}%`, color: colors.text },
+            ].map((item) => <div key={item.label}>
+              <p style={{ ...labelStyle, marginBottom: 8 }}>{item.label}</p>
+              <p style={{ margin: 0, fontFamily: mono, fontSize: 'clamp(18px, 4vw, 32px)', color: item.color }}>{item.value}</p>
+            </div>)}
+          </div>
+        </section>}
         <header style={{
           fontFamily: mono, fontSize: 11, letterSpacing: '0.08em', textAlign: 'right',
           color: colors.muted, paddingBottom: 28, overflowWrap: 'anywhere',
         }}>
-          SESSION {score.session_id} · SCAM GYM · ROUND 1
+          SESSION {score.session_id} · SCAM GYM · ROUND {round}
         </header>
 
         <section style={sectionStyle}>
@@ -104,13 +119,14 @@ export default function Debrief({ score }) {
           </ol>
         </section>}
 
-        <footer style={sectionStyle}>
-          <button type="button" style={{
+        {round === 1 && <footer style={sectionStyle}>
+          {trainingError && <p role="alert" style={{ color: colors.red, marginBottom: 16 }}>{trainingError}</p>}
+          <button type="button" onClick={onTrainGap} disabled={training} style={{
             width: '100%', padding: '18px 24px', borderRadius: 0, boxShadow: 'none',
             border: `1px solid ${colors.text}`, background: colors.text, color: colors.background,
-            fontFamily: mono, fontSize: 12, letterSpacing: '0.16em', cursor: 'pointer',
-          }}>TRAIN THIS GAP</button>
-        </footer>
+            fontFamily: mono, fontSize: 12, letterSpacing: '0.16em', cursor: training ? 'wait' : 'pointer',
+          }}>{training ? 'CREATING ROUND 2…' : 'TRAIN THIS GAP'}</button>
+        </footer>}
       </div>
     </main>
   );
