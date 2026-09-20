@@ -3,6 +3,28 @@ import { useEffect, useRef, useState } from 'react';
 import Quiz from './Quiz';
 import Debrief from './Debrief';
 
+const SCORING_MESSAGES = [
+  'Reading the transcript…',
+  'Matching tactics to the rubric…',
+  'Comparing what you said to what you did…',
+];
+
+const callMono = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
+
+function CallTimer() {
+  const [seconds, setSeconds] = useState(0);
+  useEffect(() => {
+    const startedAt = performance.now();
+    const interval = setInterval(() => {
+      setSeconds(Math.floor((performance.now() - startedAt) / 1000));
+    }, 250);
+    return () => clearInterval(interval);
+  }, []);
+  return <span role="timer" aria-label="Call duration" style={{ fontFamily: callMono, fontSize: 24 }}>
+    {Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, '0')}
+  </span>;
+}
+
 export default function App() {
   return (
     <ConversationProvider agentId={import.meta.env.VITE_ELEVENLABS_AGENT_ID}>
@@ -26,9 +48,19 @@ function Call() {
   const [sessionError, setSessionError] = useState('');
   const [score, setScore] = useState(null);
   const [scoreError, setScoreError] = useState('');
+  const scoreRequest = useRef(null);
+  const [scoringLine, setScoringLine] = useState(0);
   const [log, setLog] = useState([]);
   const [name, setName] = useState('Jordan Reyes');
   const session = useRef(null);
+
+  useEffect(() => {
+    if (stage !== 'scoring' || scoreError) return;
+    const interval = setInterval(() => {
+      setScoringLine((line) => (line + 1) % SCORING_MESSAGES.length);
+    }, 1500);
+    return () => clearInterval(interval);
+  }, [stage, scoreError]);
 
   useEffect(() => {
     let active = true;
@@ -59,6 +91,33 @@ function Call() {
     });
     return () => { active = false; };
   }, []);
+
+  const requestScore = async () => {
+    setScoreError('');
+    try {
+      const response = await fetch(`http://localhost:8000/score/${backendSessionId.current}`, {
+        method: 'POST',
+      });
+      if (!response.ok) throw new Error(`Score POST failed: ${response.status}`);
+      const nextScore = await response.json();
+      if (round === 2 && previousScore.current) {
+        const target = previousScore.current.biggest_gap;
+        const before = previousScore.current.behaviors.find((behavior) => behavior.name === target);
+        const after = nextScore.behaviors.find((behavior) => behavior.name === target);
+        setComparison(before && after ? {
+          label: before.label,
+          round1: before.behavior_pct,
+          round2: after.behavior_pct,
+        } : null);
+      }
+      setScore(nextScore);
+      return nextScore;
+    } catch (e) {
+      console.error('scoring failed:', e);
+      setScoreError('Could not score your call. Please try again.');
+      return null;
+    }
+  };
 
   const conversation = useConversation({
     onMessage: (m) => {
@@ -97,6 +156,7 @@ function Call() {
           body: JSON.stringify(transcript),
         });
         if (!response.ok) throw new Error(`Transcript POST failed: ${response.status}`);
+        scoreRequest.current = requestScore();
         setStage('reflect');
       } catch (e) {
         console.error('transcript submission failed:', e);
@@ -104,31 +164,16 @@ function Call() {
     },
   });
 
-  const requestScore = async () => {
+  const finishScoring = async () => {
+    setScoringLine(0);
     setStage('scoring');
-    setScoreError('');
-    try {
-      const response = await fetch(`http://localhost:8000/score/${backendSessionId.current}`, {
-        method: 'POST',
-      });
-      if (!response.ok) throw new Error(`Score POST failed: ${response.status}`);
-      const nextScore = await response.json();
-      if (round === 2 && previousScore.current) {
-        const target = previousScore.current.biggest_gap;
-        const before = previousScore.current.behaviors.find((behavior) => behavior.name === target);
-        const after = nextScore.behaviors.find((behavior) => behavior.name === target);
-        setComparison(before && after ? {
-          label: before.label,
-          round1: before.behavior_pct,
-          round2: after.behavior_pct,
-        } : null);
-      }
-      setScore(nextScore);
-      setStage('debrief');
-    } catch (e) {
-      console.error('scoring failed:', e);
-      setScoreError('Could not score your call. Please try again.');
-    }
+    const result = await scoreRequest.current;
+    if (result) setStage('debrief');
+  };
+
+  const retryScore = async () => {
+    scoreRequest.current = requestScore();
+    await finishScoring();
   };
 
   const completeQuiz = async (answers) => {
@@ -138,7 +183,7 @@ function Call() {
       body: JSON.stringify({ quiz: answers }),
     });
     if (!response.ok) throw new Error(`Quiz POST failed: ${response.status}`);
-    await requestScore();
+    await finishScoring();
   };
 
   const trainGap = async () => {
@@ -159,6 +204,7 @@ function Call() {
       }
       previousScore.current = score;
       backendSessionId.current = session_id;
+      scoreRequest.current = null;
       setScore(null);
       setScoreError('');
       setSessionError('');
@@ -197,8 +243,8 @@ function Call() {
     <div style={{ padding: 24, fontFamily: 'system-ui', maxWidth: 800 }}>
       {scoreError ? <>
         <p role="alert">{scoreError}</p>
-        <button onClick={requestScore} style={{ padding: 8 }}>Try again</button>
-      </> : <p role="status">Scoring your call…</p>}
+        <button onClick={retryScore} style={{ padding: 8 }}>Try again</button>
+      </> : <p role="status">{SCORING_MESSAGES[scoringLine]}</p>}
     </div>
   );
 
@@ -207,25 +253,50 @@ function Call() {
     onTrainGap={trainGap} training={training} trainingError={trainingError}
   />;
 
-  return (
-    <div style={{ padding: 24, fontFamily: 'system-ui', maxWidth: 800 }}>
-      <h2>Incoming call</h2>
-      <p style={{ fontFamily: 'ui-monospace, monospace', fontSize: 12, letterSpacing: '0.16em' }}>ROUND {round}</p>
-      <p>Status: <strong>{conversation.status}</strong></p>
-      <p style={{ opacity: 0.7 }}>
-        You are {name}. Your Northbridge account ends in 4417.
-      </p>
-      {sessionError && <p role="alert">{sessionError}</p>}
+  const callStatus = conversation.status === 'connected'
+    ? { label: 'IN CALL', color: '#83a98c' }
+    : conversation.status === 'connecting'
+      ? { label: 'CONNECTING', color: '#c3a16b' }
+      : conversation.status === 'disconnecting' || !Array.isArray(log)
+        ? { label: 'ENDED', color: '#a2aaa9' }
+        : { label: 'READY', color: '#a2aaa9' };
 
-      <input value={name} onChange={(e) => setName(e.target.value)} style={{ padding: 8, marginRight: 8 }} />
-      <button onClick={start} disabled={!sessionReady} style={{ padding: 8, marginRight: 8 }}>Start call</button>
-      <button onClick={() => conversation.endSession()} style={{ padding: 8 }}>End call</button>
+  return (
+    <main style={{ background: '#101213', color: '#e8e7e1', minHeight: '100svh', padding: '32px clamp(16px, 5vw, 56px)', boxSizing: 'border-box', fontFamily: 'system-ui, sans-serif', textAlign: 'left', lineHeight: 1.5 }}>
+      <div style={{ maxWidth: 960, margin: '0 auto' }}>
+        <header style={{ fontFamily: callMono, fontSize: 11, letterSpacing: '0.08em', textAlign: 'right', color: '#a2aaa9', paddingBottom: 28, borderBottom: '1px solid #343a3c' }}>
+          SCAM GYM · ROUND {round}
+        </header>
+        <section style={{ padding: '32px 0', borderBottom: '1px solid #343a3c' }}>
+          <h2 style={{ color: '#e8e7e1', fontSize: 40, fontWeight: 400, margin: '0 0 24px' }}>Incoming call</h2>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, minHeight: 36 }}>
+            <p role="status" style={{ display: 'flex', alignItems: 'center', gap: 10, margin: 0, fontFamily: callMono, fontSize: 12, letterSpacing: '0.16em', color: callStatus.color }}>
+              <span aria-hidden="true" style={{ width: 7, height: 7, borderRadius: '50%', background: callStatus.color }} />
+              {callStatus.label}
+            </p>
+            {conversation.status === 'connected' && <CallTimer />}
+          </div>
+        </section>
+        <p style={{ border: '1px solid #343a3c', padding: 20, margin: '32px 0', color: '#a2aaa9' }}>
+          You are <span style={{ color: '#e8e7e1' }}>{name}</span>. Your Northbridge account ends in <span style={{ fontFamily: callMono, color: '#e8e7e1' }}>4417</span>.
+        </p>
+        {sessionError && <p role="alert" style={{ color: '#bc7979', marginBottom: 24 }}>{sessionError}</p>}
+
+        <label style={{ display: 'block', marginBottom: 24 }}>
+          <span style={{ display: 'block', fontFamily: callMono, fontSize: 11, letterSpacing: '0.16em', color: '#a2aaa9', marginBottom: 10 }}>YOUR NAME</span>
+          <input value={name} onChange={(e) => setName(e.target.value)} style={{ width: '100%', boxSizing: 'border-box', padding: '14px 16px', border: '1px solid #343a3c', borderRadius: 0, boxShadow: 'none', background: '#101213', color: '#e8e7e1', fontFamily: 'inherit', fontSize: 16 }} />
+        </label>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, paddingTop: 24, borderTop: '1px solid #343a3c' }}>
+          <button onClick={start} disabled={!sessionReady} style={{ flex: '1 1 180px', padding: '16px 24px', border: '1px solid #e8e7e1', borderRadius: 0, boxShadow: 'none', background: '#e8e7e1', color: '#101213', fontFamily: callMono, fontSize: 13, opacity: sessionReady ? 1 : 0.45, cursor: sessionReady ? 'pointer' : 'not-allowed' }}>Start call</button>
+          <button onClick={() => conversation.endSession()} style={{ flex: '1 1 180px', padding: '16px 24px', border: '1px solid #343a3c', borderRadius: 0, boxShadow: 'none', background: 'transparent', color: '#e8e7e1', fontFamily: callMono, fontSize: 13, cursor: 'pointer' }}>End call</button>
+        </div>
 
       {DEBUG && (
         <pre style={{ background: '#111', color: '#0f0', padding: 12, marginTop: 16, overflow: 'auto' }}>
           {JSON.stringify(log, null, 2)}
         </pre>
       )}
-    </div>
+      </div>
+    </main>
   );
 }
