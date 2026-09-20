@@ -8,6 +8,7 @@ Those files are the source of truth. If one changes, change it here in the
 same commit.
 """
 
+import os
 import uuid
 from typing import Any, Literal
 
@@ -22,12 +23,13 @@ db.init_db()
 
 app = FastAPI(title="Scam Gym API", version="0.1.0")
 
+allowed_origins = ["http://localhost:5173"]
+if os.environ.get("FRONTEND_URL"):
+    allowed_origins.append(os.environ["FRONTEND_URL"])
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ],
+    allow_origins=allowed_origins,
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -322,3 +324,9 @@ def get_session(session_id: str) -> SessionResponse:
     if row is None:
         raise HTTPException(404, f"no session with id {session_id!r}")
     return SessionResponse(**row)
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", "8000")))

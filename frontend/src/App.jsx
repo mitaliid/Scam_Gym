@@ -4,6 +4,8 @@ import Quiz from './Quiz';
 import Debrief from './Debrief';
 import { Navigation, Landing, About, Dashboard, Setup, SignInModal } from './SiteViews';
 
+const API = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 const SCORING_MESSAGES = [
   'Reading the transcript…',
   'Matching tactics to the rubric…',
@@ -38,7 +40,7 @@ export default function App() {
   const refreshMembers = useCallback(async () => {
     const request = ++membersRequest.current;
     try {
-      const response = await fetch('http://localhost:8000/members');
+      const response = await fetch(`${API}/members`);
       if (!response.ok) throw new Error(`Members GET failed: ${response.status}`);
       const data = await response.json();
       const list = Array.isArray(data) ? data : data.members;
@@ -65,7 +67,7 @@ export default function App() {
     setView('drill');
   };
   const addMember = async (details) => {
-    const response = await fetch('http://localhost:8000/members', {
+    const response = await fetch(`${API}/members`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -142,7 +144,7 @@ function Call({ member, onDrillComplete }) {
     // Reuse the request when StrictMode runs the mount effect twice.
     if (!sessionRequest.current) {
       sessionRequest.current = (async () => {
-        const response = await fetch('http://localhost:8000/session', {
+        const response = await fetch(`${API}/session`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ quiz: {}, member_id: member.id }),
@@ -172,7 +174,7 @@ function Call({ member, onDrillComplete }) {
     setStage('scoring');
     setScoreError('');
     try {
-      const response = await fetch(`http://localhost:8000/score/${backendSessionId.current}`, {
+      const response = await fetch(`${API}/score/${backendSessionId.current}`, {
         method: 'POST',
       });
       if (!response.ok) throw new Error(`Score POST failed: ${response.status}`);
@@ -228,7 +230,7 @@ function Call({ member, onDrillComplete }) {
       session.current = null;
       setLog(transcript);
       try {
-        const response = await fetch('http://localhost:8000/transcript', {
+        const response = await fetch(`${API}/transcript`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(transcript),
@@ -244,7 +246,7 @@ function Call({ member, onDrillComplete }) {
   const retryScore = () => requestScore();
 
   const completeQuiz = async (answers, gutAnswer) => {
-    const response = await fetch(`http://localhost:8000/session/${backendSessionId.current}`, {
+    const response = await fetch(`${API}/session/${backendSessionId.current}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ quiz: answers }),
@@ -260,7 +262,7 @@ function Call({ member, onDrillComplete }) {
     setTraining(true);
     setTrainingError('');
     try {
-      const response = await fetch('http://localhost:8000/session', {
+      const response = await fetch(`${API}/session`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ quiz: {}, member_id: member.id }),
