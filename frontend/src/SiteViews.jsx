@@ -64,11 +64,11 @@ export function About() {
   </main>;
 }
 
-function EditableField({ value, onCommit, label: fieldLabel, numeric = false }) {
+function EditableField({ value, onCommit, label: fieldLabel, numeric = false, placeholder }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');
   if (!editing) return <button type="button" aria-label={`Edit ${fieldLabel}`} onClick={() => { setDraft(String(value)); setEditing(true); }}
-    style={{ border: 0, padding: 0, background: 'transparent', color: 'inherit', font: 'inherit', letterSpacing: 'inherit', textAlign: 'left', cursor: 'text' }}>{value}</button>;
+    style={{ border: 0, padding: 0, background: 'transparent', color: value === '' && placeholder ? '#7A746A' : 'inherit', font: 'inherit', letterSpacing: 'inherit', textAlign: 'left', cursor: 'text' }}>{value === '' ? placeholder : value}</button>;
   return <input autoFocus aria-label={fieldLabel} type={numeric ? 'number' : 'text'} min={numeric ? 0 : undefined} step={numeric ? 1 : undefined}
     value={draft} onChange={(event) => setDraft(event.target.value)}
     onKeyDown={(event) => { if (event.key === 'Enter') event.currentTarget.blur(); if (event.key === 'Escape') setEditing(false); }}
@@ -104,7 +104,7 @@ function formatDrillDate(timestamp) {
 export function Dashboard({ onDrill, onAddMember, members, familyName, setFamilyName }) {
   return <main className="editorial-page" style={page}>
     <p className="section-label" style={label}>HOUSEHOLD · DRILL HISTORY</p>
-    <h1 style={heading}><EditableField value={familyName} onCommit={setFamilyName} label="household name" /></h1>
+    <h1 style={heading}><EditableField value={familyName} onCommit={setFamilyName} label="household name" placeholder="Name your household" /></h1>
     <button style={{ ...secondary, marginBottom: 24 }} onClick={onAddMember}>Add a family member</button>
     {members.map((member) => {
       const latest = member.drills[0];

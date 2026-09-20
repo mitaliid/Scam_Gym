@@ -31,7 +31,7 @@ function CallTimer({ session }) {
 export default function App() {
   const [view, setView] = useState('landing');
   const [signInOpen, setSignInOpen] = useState(false);
-  const [familyName, setFamilyName] = useState('The Chen family');
+  const [familyName, setFamilyName] = useState('');
   const [members, setMembers] = useState([]);
   const [membersLoaded, setMembersLoaded] = useState(false);
   const [membersError, setMembersError] = useState('');
