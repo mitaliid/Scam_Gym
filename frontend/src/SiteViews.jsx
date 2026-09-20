@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const mono = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
 const label = { fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', color: '#6B6B6B', margin: '0 0 20px' };
@@ -64,26 +64,51 @@ export function About() {
   </main>;
 }
 
-export function Dashboard({ onDrill }) {
+function EditableField({ value, onCommit, label: fieldLabel, numeric = false }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState('');
+  if (!editing) return <button type="button" aria-label={`Edit ${fieldLabel}`} onClick={() => { setDraft(String(value)); setEditing(true); }}
+    style={{ border: 0, padding: 0, background: 'transparent', color: 'inherit', font: 'inherit', letterSpacing: 'inherit', textAlign: 'left', cursor: 'text' }}>{value}</button>;
+  return <input autoFocus aria-label={fieldLabel} type={numeric ? 'number' : 'text'} min={numeric ? 0 : undefined} step={numeric ? 1 : undefined}
+    value={draft} onChange={(event) => setDraft(event.target.value)}
+    onKeyDown={(event) => { if (event.key === 'Enter') event.currentTarget.blur(); if (event.key === 'Escape') setEditing(false); }}
+    onBlur={() => {
+      const text = draft.trim();
+      if (text && (!numeric || (Number.isInteger(Number(text)) && Number(text) >= 0))) onCommit(numeric ? Number(text) : text);
+      setEditing(false);
+    }}
+    style={{ width: numeric ? '4ch' : '100%', maxWidth: '100%', boxSizing: 'border-box', padding: '8px 12px', border: '1px solid #E0E0DD', borderRadius: 0, boxShadow: 'none', background: '#FAFAF8', color: 'inherit', font: 'inherit' }} />;
+}
+
+function Trend({ current, previous }) {
+  if (previous === undefined) return null;
+  const delta = current - previous;
+  return <span style={{ fontFamily: mono, fontSize: 12, color: delta > 0 ? '#1F6F5C' : delta < 0 ? '#C0392B' : '#6B6B6B' }}>
+    {delta > 0 ? '↑' : delta < 0 ? '↓' : '→'} {delta > 0 ? '+' : ''}{delta}
+  </span>;
+}
+
+export function Dashboard({ onDrill, familyName, setFamilyName, memberName, setMemberName, memberAge, setMemberAge, drills }) {
+  const latest = drills[0];
   return <main style={page}>
-    <p style={label}>HOUSEHOLD · DEMO DATA</p>
-    <h1 style={heading}>The Chen family</h1>
+    <p style={label}>HOUSEHOLD · {drills.every((drill) => drill.demo) ? 'DEMO DATA' : 'DRILL HISTORY'}</p>
+    <h1 style={heading}><EditableField value={familyName} onCommit={setFamilyName} label="household name" /></h1>
     <article style={{ border: '1px solid #E0E0DD', padding: 24, marginBottom: 32 }}>
-      <h2 style={{ color: '#1A1A1A', fontSize: 28, fontWeight: 400, margin: '0 0 28px' }}>Margaret Chen, <span style={{ fontFamily: mono }}>74</span></h2>
+      <h2 style={{ color: '#1A1A1A', fontSize: 28, fontWeight: 400, margin: '0 0 28px' }}><EditableField value={memberName} onCommit={setMemberName} label="member name" />, <span style={{ fontFamily: mono }}><EditableField value={memberAge} onCommit={setMemberAge} label="member age" numeric /></span></h2>
       <div style={grid}>
-        <div><p style={label}>LAST DRILL</p><p style={{ fontFamily: mono }}>2026-09-18</p></div>
-        <div><p style={label}>RESISTANCE SCORE</p><p style={{ fontFamily: mono, color: '#1F6F5C', fontSize: 28 }}>72 / 100 <span style={{ fontSize: 12 }}>↑ +14</span></p></div>
-        <div><p style={label}>WEAKEST BEHAVIOR</p><p style={{ color: '#C0392B' }}>Independent verification</p></div>
+        <div><p style={label}>LAST DRILL</p><p style={{ fontFamily: mono }}>{latest.date}</p></div>
+        <div><p style={label}>RESISTANCE SCORE</p><p style={{ fontFamily: mono, color: '#1F6F5C', fontSize: 28 }}>{latest.score} / 100 <Trend current={latest.score} previous={drills[1]?.score} /></p></div>
+        <div><p style={label}>WEAKEST BEHAVIOR</p><p style={{ color: '#C0392B' }}>{latest.weakestBehavior}</p></div>
       </div>
     </article>
     <section style={section}>
       <h2 style={label}>PAST DRILLS</h2>
       <div style={{ overflowX: 'auto' }}><table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
         <thead><tr>{['Date', 'Scenario', 'Score'].map((title) => <th key={title} scope="col" style={{ ...label, padding: '12px 16px', borderBottom: '1px solid #E0E0DD', textTransform: 'uppercase', fontWeight: 400 }}>{title}</th>)}</tr></thead>
-        <tbody>{[['2026-09-18', 'Bank fraud', '72 ↑'], ['2026-09-11', 'Bank fraud', '58'], ['2026-09-04', 'Bank fraud', '41']].map(([date, scenario, score], index) => <tr key={date}>
+        <tbody>{drills.map(({ id, date, scenario, score }, index) => <tr key={id}>
           <td style={{ fontFamily: mono, padding: 16, borderBottom: '1px solid #E0E0DD', whiteSpace: 'nowrap' }}>{date}</td>
           <td style={{ padding: 16, borderBottom: '1px solid #E0E0DD' }}>{scenario}</td>
-          <td style={{ fontFamily: mono, padding: 16, borderBottom: '1px solid #E0E0DD', color: index === 0 ? '#1F6F5C' : '#6B6B6B' }}>{score}</td>
+          <td style={{ fontFamily: mono, padding: 16, borderBottom: '1px solid #E0E0DD', color: index === 0 ? '#1F6F5C' : '#6B6B6B' }}>{score} <Trend current={score} previous={drills[index + 1]?.score} /></td>
         </tr>)}</tbody>
       </table></div>
     </section>

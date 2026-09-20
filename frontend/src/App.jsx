@@ -1,5 +1,5 @@
 import { ConversationProvider, useConversation } from '@elevenlabs/react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Quiz from './Quiz';
 import Debrief from './Debrief';
 import { Navigation, Landing, About, Dashboard, SignInModal } from './SiteViews';
@@ -26,17 +26,41 @@ function CallTimer({ session }) {
   </span>;
 }
 
+function drillDate(daysAgo = 0) {
+  const date = new Date();
+  date.setDate(date.getDate() - daysAgo);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
 export default function App() {
   const [view, setView] = useState('landing');
   const [signInOpen, setSignInOpen] = useState(false);
+  const [familyName, setFamilyName] = useState('The Chen family');
+  const [memberName, setMemberName] = useState('Margaret Chen');
+  const [memberAge, setMemberAge] = useState(74);
+  const [drills, setDrills] = useState(() => [72, 58, 41].map((score, index) => ({
+    id: `demo-${index}`, date: drillDate(index * 7), scenario: 'Bank fraud', score,
+    weakestBehavior: 'Independent verification', demo: true,
+  })));
+  const recordDrill = useCallback((score) => {
+    const row = {
+      id: score.session_id, date: drillDate(), scenario: 'Bank fraud',
+      score: score.behaviors.length ? Math.round(score.behaviors.reduce((sum, behavior) => sum + behavior.behavior_pct, 0) / score.behaviors.length) : 0,
+      weakestBehavior: score.behaviors.find((behavior) => behavior.name === score.biggest_gap)?.label ?? 'Not available',
+    };
+    setDrills((previous) => previous.some((drill) => drill.id === row.id) ? previous : [row, ...previous]);
+  }, []);
   return (
     <div style={{ background: '#FAFAF8', color: '#1A1A1A', minHeight: '100svh', width: '100vw', alignSelf: 'center', fontFamily: 'system-ui, sans-serif', lineHeight: 1.5, textAlign: 'left' }}>
       <Navigation view={view} onNavigate={setView} onSignIn={() => setSignInOpen(true)} />
       {view === 'landing' && <Landing onDrill={() => setView('drill')} />}
       {view === 'about' && <About />}
-      {view === 'dashboard' && <Dashboard onDrill={() => setView('drill')} />}
+      {view === 'dashboard' && <Dashboard onDrill={() => setView('drill')}
+        familyName={familyName} setFamilyName={setFamilyName}
+        memberName={memberName} setMemberName={setMemberName}
+        memberAge={memberAge} setMemberAge={setMemberAge} drills={drills} />}
       {view === 'drill' && <ConversationProvider agentId={import.meta.env.VITE_ELEVENLABS_AGENT_ID}>
-        <Call />
+        <Call onDrillComplete={recordDrill} />
       </ConversationProvider>}
       {signInOpen && <SignInModal onClose={() => setSignInOpen(false)} onSignIn={() => {
         setSignInOpen(false);
@@ -46,7 +70,7 @@ export default function App() {
   );
 }
 
-function Call() {
+function Call({ onDrillComplete }) {
   const DEBUG = false;
   const [stage, setStage] = useState('call');
   const [round, setRound] = useState(1);
@@ -68,6 +92,10 @@ function Call() {
   const [lastFour, setLastFour] = useState('4417');
   const [bankName, setBankName] = useState('Northbridge Savings');
   const session = useRef(null);
+
+  useEffect(() => {
+    if (stage === 'debrief' && score) onDrillComplete(score);
+  }, [stage, score, onDrillComplete]);
 
   useEffect(() => {
     if (stage !== 'scoring' || scoreError) return;
