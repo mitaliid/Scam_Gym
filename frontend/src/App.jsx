@@ -11,17 +11,17 @@ const SCORING_MESSAGES = [
 
 const callMono = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
 
-function CallTimer() {
+function CallTimer({ session }) {
   const [seconds, setSeconds] = useState(0);
   useEffect(() => {
-    const startedAt = performance.now();
+    const startedAt = session.current?.startedAt ?? performance.now();
     const interval = setInterval(() => {
       setSeconds(Math.floor((performance.now() - startedAt) / 1000));
-    }, 250);
+    }, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [session]);
   return <span role="timer" aria-label="Call duration" style={{ fontFamily: callMono, fontSize: 24 }}>
-    {Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, '0')}
+    {String(Math.floor(seconds / 60)).padStart(2, '0')}:{String(seconds % 60).padStart(2, '0')}
   </span>;
 }
 
@@ -227,7 +227,7 @@ function Call() {
       await navigator.mediaDevices.getUserMedia({ audio: true });
       await conversation.startSession({
         dynamicVariables: {
-          user_name: name,
+          user_name: name.trim() || 'Jordan Reyes',
           account_last4: '4417',
           target_behavior: round === 2 ? previousScore.current.biggest_gap : 'none',
         },
@@ -253,49 +253,69 @@ function Call() {
     onTrainGap={trainGap} training={training} trainingError={trainingError}
   />;
 
-  const callStatus = conversation.status === 'connected'
-    ? { label: 'IN CALL', color: '#83a98c' }
-    : conversation.status === 'connecting'
-      ? { label: 'CONNECTING', color: '#c3a16b' }
-      : conversation.status === 'disconnecting' || !Array.isArray(log)
-        ? { label: 'ENDED', color: '#a2aaa9' }
-        : { label: 'READY', color: '#a2aaa9' };
+  return <PhoneCallScreen
+    key={round} round={round} name={name} setName={setName}
+    sessionReady={sessionReady} sessionError={sessionError}
+    conversation={conversation} start={start} session={session}
+    log={log} debug={DEBUG}
+  />;
+}
+
+function PhoneCallScreen({ round, name, setName, sessionReady, sessionError, conversation, start, session, log, debug }) {
+  const [ready, setReady] = useState(false);
+  const connected = conversation.status === 'connected';
+  const connecting = conversation.status === 'connecting';
+  const ended = conversation.status === 'disconnecting' || !Array.isArray(log);
+  const inCall = connected || ended;
+  const labelStyle = { fontFamily: callMono, fontSize: 11, letterSpacing: '0.16em', color: '#a2aaa9' };
+  const circleStyle = {
+    width: 88, height: 88, borderRadius: '50%', border: '1px solid #343a3c',
+    boxShadow: 'none', color: '#101213', display: 'grid', placeItems: 'center', cursor: 'pointer',
+  };
+  const handset = <svg aria-hidden="true" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
+    <path d="M22 16.9v3a2 2 0 0 1-2.2 2A19.8 19.8 0 0 1 3.1 5.2 2 2 0 0 1 5.1 3h3a1 1 0 0 1 1 .8l.7 3a1 1 0 0 1-.3 1L8 9.3a16 16 0 0 0 6.7 6.7l1.5-1.5a1 1 0 0 1 1-.3l3 .7a1 1 0 0 1 .8 1Z" />
+  </svg>;
 
   return (
-    <main style={{ background: '#101213', color: '#e8e7e1', minHeight: '100svh', padding: '32px clamp(16px, 5vw, 56px)', boxSizing: 'border-box', fontFamily: 'system-ui, sans-serif', textAlign: 'left', lineHeight: 1.5 }}>
-      <div style={{ maxWidth: 960, margin: '0 auto' }}>
+    <main style={{ background: '#101213', color: '#e8e7e1', minHeight: '100svh', width: '100vw', alignSelf: 'center', padding: '32px clamp(16px, 5vw, 56px)', boxSizing: 'border-box', fontFamily: 'system-ui, sans-serif', textAlign: 'left', lineHeight: 1.5, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ maxWidth: 960, width: '100%', margin: '0 auto', flex: 1, display: 'flex', flexDirection: 'column' }}>
         <header style={{ fontFamily: callMono, fontSize: 11, letterSpacing: '0.08em', textAlign: 'right', color: '#a2aaa9', paddingBottom: 28, borderBottom: '1px solid #343a3c' }}>
           SCAM GYM · ROUND {round}
         </header>
-        <section style={{ padding: '32px 0', borderBottom: '1px solid #343a3c' }}>
-          <h2 style={{ color: '#e8e7e1', fontSize: 40, fontWeight: 400, margin: '0 0 24px' }}>Incoming call</h2>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, minHeight: 36 }}>
-            <p role="status" style={{ display: 'flex', alignItems: 'center', gap: 10, margin: 0, fontFamily: callMono, fontSize: 12, letterSpacing: '0.16em', color: callStatus.color }}>
-              <span aria-hidden="true" style={{ width: 7, height: 7, borderRadius: '50%', background: callStatus.color }} />
-              {callStatus.label}
-            </p>
-            {conversation.status === 'connected' && <CallTimer />}
+        {sessionError && <p role="alert" style={{ color: '#bc7979', marginTop: 24 }}>{sessionError}</p>}
+
+        {!ready ? <section style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', width: '100%', maxWidth: 480, margin: '0 auto', padding: '40px 0' }}>
+          <div style={{ border: '1px solid #343a3c', padding: 24 }}>
+            <label style={{ display: 'block' }}>
+              <span style={{ ...labelStyle, display: 'block', marginBottom: 16 }}>YOU ARE</span>
+              <input value={name} onChange={(e) => setName(e.target.value)} style={{ width: '100%', boxSizing: 'border-box', padding: '12px 0', border: 0, borderRadius: 0, boxShadow: 'none', background: 'transparent', color: '#e8e7e1', fontFamily: 'inherit', fontSize: 28 }} />
+            </label>
+            <p style={{ fontFamily: callMono, fontSize: 12, letterSpacing: '0.04em', borderTop: '1px solid #343a3c', paddingTop: 24, margin: '20px 0 0', color: '#a2aaa9' }}>NORTHBRIDGE SAVINGS · ••••4417</p>
           </div>
-        </section>
-        <p style={{ border: '1px solid #343a3c', padding: 20, margin: '32px 0', color: '#a2aaa9' }}>
-          You are <span style={{ color: '#e8e7e1' }}>{name}</span>. Your Northbridge account ends in <span style={{ fontFamily: callMono, color: '#e8e7e1' }}>4417</span>.
-        </p>
-        {sessionError && <p role="alert" style={{ color: '#bc7979', marginBottom: 24 }}>{sessionError}</p>}
+          <button type="button" onClick={() => setReady(true)} disabled={!sessionReady} style={{ width: '100%', marginTop: 24, padding: '18px 24px', border: '1px solid #e8e7e1', borderRadius: 0, boxShadow: 'none', background: '#e8e7e1', color: '#101213', fontFamily: callMono, fontSize: 14, opacity: sessionReady ? 1 : 0.45, cursor: sessionReady ? 'pointer' : 'not-allowed' }}>Ready</button>
+        </section> : <section style={{ flex: 1, display: 'flex', flexDirection: 'column', textAlign: 'center' }}>
+          <div style={{ padding: 'clamp(48px, 12vh, 120px) 0 40px' }}>
+            {!inCall && <p style={{ fontFamily: callMono, fontSize: 14, color: '#a2aaa9', margin: '0 0 20px' }}>(412) 555-0147</p>}
+            <h2 style={{ color: '#e8e7e1', fontSize: 'clamp(32px, 6vw, 48px)', fontWeight: 400, margin: '0 0 16px' }}>Northbridge Savings</h2>
+            {connected ? <CallTimer session={session} /> : <p role="status" style={{ ...labelStyle, margin: 0 }}>
+              {ended ? 'CALL ENDED' : connecting ? 'CONNECTING…' : 'Fraud Prevention'}
+            </p>}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 'clamp(48px, 12vw, 120px)', marginTop: 'auto', padding: '32px 0 max(32px, env(safe-area-inset-bottom))' }}>
+            {inCall ? <button type="button" aria-label="End call" onClick={() => conversation.endSession()} style={{ ...circleStyle, background: '#bc7979' }}>
+              <span style={{ display: 'flex', transform: 'rotate(135deg)' }}>{handset}</span>
+            </button> : <>
+              <button type="button" aria-label="Decline call" style={{ ...circleStyle, background: '#bc7979' }}>
+                <span style={{ display: 'flex', transform: 'rotate(135deg)' }}>{handset}</span>
+              </button>
+              <button type="button" aria-label="Accept call" onClick={start} disabled={connecting} style={{ ...circleStyle, background: '#83a98c', opacity: connecting ? 0.45 : 1, cursor: connecting ? 'wait' : 'pointer' }}>
+                {handset}
+              </button>
+            </>}
+          </div>
+        </section>}
 
-        <label style={{ display: 'block', marginBottom: 24 }}>
-          <span style={{ display: 'block', fontFamily: callMono, fontSize: 11, letterSpacing: '0.16em', color: '#a2aaa9', marginBottom: 10 }}>YOUR NAME</span>
-          <input value={name} onChange={(e) => setName(e.target.value)} style={{ width: '100%', boxSizing: 'border-box', padding: '14px 16px', border: '1px solid #343a3c', borderRadius: 0, boxShadow: 'none', background: '#101213', color: '#e8e7e1', fontFamily: 'inherit', fontSize: 16 }} />
-        </label>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, paddingTop: 24, borderTop: '1px solid #343a3c' }}>
-          <button onClick={start} disabled={!sessionReady} style={{ flex: '1 1 180px', padding: '16px 24px', border: '1px solid #e8e7e1', borderRadius: 0, boxShadow: 'none', background: '#e8e7e1', color: '#101213', fontFamily: callMono, fontSize: 13, opacity: sessionReady ? 1 : 0.45, cursor: sessionReady ? 'pointer' : 'not-allowed' }}>Start call</button>
-          <button onClick={() => conversation.endSession()} style={{ flex: '1 1 180px', padding: '16px 24px', border: '1px solid #343a3c', borderRadius: 0, boxShadow: 'none', background: 'transparent', color: '#e8e7e1', fontFamily: callMono, fontSize: 13, cursor: 'pointer' }}>End call</button>
-        </div>
-
-      {DEBUG && (
-        <pre style={{ background: '#111', color: '#0f0', padding: 12, marginTop: 16, overflow: 'auto' }}>
-          {JSON.stringify(log, null, 2)}
-        </pre>
-      )}
+        {debug && <pre style={{ background: '#111', color: '#0f0', padding: 12, marginTop: 16, overflow: 'auto' }}>{JSON.stringify(log, null, 2)}</pre>}
       </div>
     </main>
   );
